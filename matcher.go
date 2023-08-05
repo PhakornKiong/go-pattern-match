@@ -25,6 +25,10 @@ type UnionPattern[V any] struct {
 	patterns []V
 }
 
+type IntersectionPattern[V any] struct {
+	patterns []V
+}
+
 func NewMatcher[T any, V any](value V) *Matcher[T, V] {
 	return &Matcher[T, V]{value: value}
 }
@@ -52,6 +56,18 @@ func (m *Matcher[T, V]) With(pattern interface{}, fn Handler[T]) *Matcher[T, V] 
 				m.matched = true
 				break
 			}
+		}
+	case IntersectionPattern[V]:
+		matched := true
+		for _, subPattern := range p.patterns {
+			if !reflect.DeepEqual(m.value, subPattern) {
+				matched = false
+				break
+			}
+		}
+		if matched {
+			m.response = fn()
+			m.matched = true
 		}
 	default:
 		if reflect.DeepEqual(m.value, pattern) {
@@ -84,4 +100,12 @@ func (m *Matcher[T, V]) Otherwise(fn Handler[T]) T {
 
 func Not(pattern interface{}) NotPattern {
 	return NotPattern{pattern: pattern}
+}
+
+func Union[V any](patterns ...V) UnionPattern[V] {
+	return UnionPattern[V]{patterns: patterns}
+}
+
+func Intersection[V any](patterns ...V) IntersectionPattern[V] {
+	return IntersectionPattern[V]{patterns: patterns}
 }

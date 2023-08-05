@@ -139,7 +139,7 @@ func TestUnionPatternString(t *testing.T) {
 	input := "test union"
 	expected := "matched"
 	output := NewMatcher[string, string](input).
-		With(UnionPattern[string]{[]string{"five", "six", "test union"}}, func() string { return expected }).
+		With(Union[string]("five", "six", "test union"), func() string { return expected }).
 		Otherwise(func() string { return "did not match" })
 
 	if output != expected {
@@ -153,9 +153,23 @@ func TestUnionPatternInt(t *testing.T) {
 	expected := "matched"
 	output := NewMatcher[string, int](input).
 		With(
-			UnionPattern[int]{
-				[]int{255, 355, 356},
-			},
+			Union[int](25, 356, 123),
+			func() string { return expected },
+		).
+		Otherwise(func() string { return "did not match" })
+
+	if output != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, output)
+	}
+}
+
+func TestIntersectionPatternInt(t *testing.T) {
+
+	input := 356
+	expected := "matched"
+	output := NewMatcher[string, int](input).
+		With(
+			Intersection[int](356, 356, 356),
 			func() string { return expected },
 		).
 		Otherwise(func() string { return "did not match" })
