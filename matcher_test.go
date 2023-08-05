@@ -3,6 +3,8 @@ package pattern
 import (
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMatcherStruct(t *testing.T) {
@@ -75,8 +77,8 @@ func TestWithString(t *testing.T) {
 
 func TestNotPattern(t *testing.T) {
 	input := 2
-	output := NewMatcher[string](input).
-		With(NotPattern{2}, func() string { return "not number: two" }).
+	output := NewMatcher[string, int](input).
+		With(Not[int](2), func() string { return "not number: two" }).
 		Otherwise(func() string { return "something else" })
 
 	expected := "something else"
@@ -89,7 +91,7 @@ func TestWhenPattern(t *testing.T) {
 	input := 5
 	expected := "greater than three"
 	output := NewMatcher[string, int](input).
-		With(WhenPattern[int]{func(i int) bool { return i > 3 }},
+		With(When[int](func(i int) bool { return i > 3 }),
 			func() string {
 				return expected
 			}).
@@ -104,7 +106,7 @@ func TestWhenPatternString(t *testing.T) {
 	input := "hey there"
 	expected := "string matched"
 	output := NewMatcher[string, string](input).
-		With(WhenPattern[string]{func(i string) bool { return input == i }},
+		With(When[string](func(i string) bool { return input == i }),
 			func() string {
 				return expected
 			}).
@@ -123,7 +125,7 @@ func TestWhenPatternWithStruct(t *testing.T) {
 	input := predicate{33}
 	expected := "string matched"
 	output := NewMatcher[string, predicate](input).
-		With(WhenPattern[predicate]{func(i predicate) bool { return i.x == 33 }},
+		With(When[predicate](func(i predicate) bool { return i.x == 33 }),
 			func() string {
 				return expected
 			}).
@@ -163,18 +165,51 @@ func TestUnionPatternInt(t *testing.T) {
 	}
 }
 
-func TestIntersectionPatternInt(t *testing.T) {
+func TestIntersection(t *testing.T) {
+	unexpected := "did not match"
+	t.Run("int intput positive case", func(t *testing.T) {
+		assert := assert.New(t)
 
-	input := 356
-	expected := "matched"
-	output := NewMatcher[string, int](input).
-		With(
-			Intersection[int](356, 356, 356),
-			func() string { return expected },
-		).
-		Otherwise(func() string { return "did not match" })
+		input := 356
+		expected := "matched"
+		output := NewMatcher[string, int](input).
+			With(
+				Intersection[int](356, 356, 356),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
 
-	if output != expected {
-		t.Errorf("Expected '%s' but got '%s'", expected, output)
-	}
+		assert.Equal(expected, output)
+	})
+
+	t.Run("int intput negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := 356
+		expected := "matched"
+		output := NewMatcher[string, int](input).
+			With(
+				Intersection[int](356, 1, 356),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("string input positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		expected := "matched"
+		output := NewMatcher[string, string](input).
+			With(
+				Intersection[string](input, input, input),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
 }
