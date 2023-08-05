@@ -21,6 +21,10 @@ type WhenPattern[V any] struct {
 	predicate Predicate[V]
 }
 
+type UnionPattern[V any] struct {
+	patterns []V
+}
+
 func NewMatcher[T any, V any](value V) *Matcher[T, V] {
 	return &Matcher[T, V]{value: value}
 }
@@ -40,6 +44,14 @@ func (m *Matcher[T, V]) With(pattern interface{}, fn Handler[T]) *Matcher[T, V] 
 		if p.predicate(m.value) {
 			m.response = fn()
 			m.matched = true
+		}
+	case UnionPattern[V]:
+		for _, subPattern := range p.patterns {
+			if reflect.DeepEqual(m.value, subPattern) {
+				m.response = fn()
+				m.matched = true
+				break
+			}
 		}
 	default:
 		if reflect.DeepEqual(m.value, pattern) {

@@ -133,3 +133,34 @@ func TestWhenPatternWithStruct(t *testing.T) {
 		t.Errorf("Expected '%s' but got '%s'", expected, output)
 	}
 }
+
+func TestUnionPatternString(t *testing.T) {
+
+	input := "test union"
+	expected := "matched"
+	output := NewMatcher[string, string](input).
+		With(UnionPattern[string]{[]string{"five", "six", "test union"}}, func() string { return expected }).
+		Otherwise(func() string { return "did not match" })
+
+	if output != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, output)
+	}
+}
+
+func TestUnionPatternInt(t *testing.T) {
+
+	input := 356
+	expected := "matched"
+	output := NewMatcher[string, int](input).
+		With(
+			UnionPattern[int]{
+				[]int{255, 355, 356},
+			},
+			func() string { return expected },
+		).
+		Otherwise(func() string { return "did not match" })
+
+	if output != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, output)
+	}
+}
