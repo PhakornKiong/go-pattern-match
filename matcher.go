@@ -5,9 +5,10 @@ import (
 )
 
 type Handler[T any] func() T
+type Predicate[V any] func(V) bool
 
-type Matcher[T any] struct {
-	value    interface{}
+type Matcher[T any, V any] struct {
+	value    V
 	matched  bool
 	response T
 }
@@ -16,11 +17,15 @@ type NotPattern struct {
 	pattern interface{}
 }
 
-func NewMatcher[T any](value any) *Matcher[T] {
-	return &Matcher[T]{value: value}
+type WhenPattern[V any] struct {
+	predicate Predicate[V]
 }
 
-func (m *Matcher[T]) With(pattern interface{}, fn Handler[T]) *Matcher[T] {
+func NewMatcher[T any, V any](value V) *Matcher[T, V] {
+	return &Matcher[T, V]{value: value}
+}
+
+func (m *Matcher[T, V]) With(pattern interface{}, fn Handler[T]) *Matcher[T, V] {
 	if m.matched {
 		return m
 	}
@@ -28,6 +33,11 @@ func (m *Matcher[T]) With(pattern interface{}, fn Handler[T]) *Matcher[T] {
 	switch p := pattern.(type) {
 	case NotPattern:
 		if !reflect.DeepEqual(m.value, p.pattern) {
+			m.response = fn()
+			m.matched = true
+		}
+	case WhenPattern[V]:
+		if p.predicate(m.value) {
 			m.response = fn()
 			m.matched = true
 		}
@@ -41,19 +51,19 @@ func (m *Matcher[T]) With(pattern interface{}, fn Handler[T]) *Matcher[T] {
 	return m
 }
 
-func (m *Matcher[T]) WithString(fn Handler[T]) *Matcher[T] {
+func (m *Matcher[T, V]) WithString(fn Handler[T]) *Matcher[T, V] {
 	if m.matched {
 		return m
 	}
 
-	if _, ok := m.value.(string); ok {
+	if reflect.TypeOf(m.value).Kind() == reflect.String {
 		m.response = fn()
 		m.matched = true
 	}
 	return m
 }
 
-func (m *Matcher[T]) Otherwise(fn Handler[T]) T {
+func (m *Matcher[T, V]) Otherwise(fn Handler[T]) T {
 	if !m.matched {
 		m.response = fn()
 	}

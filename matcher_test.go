@@ -84,3 +84,52 @@ func TestNotPattern(t *testing.T) {
 		t.Errorf("Expected '%s' but got '%s'", expected, output)
 	}
 }
+
+func TestWhenPattern(t *testing.T) {
+	input := 5
+	expected := "greater than three"
+	output := NewMatcher[string, int](input).
+		With(WhenPattern[int]{func(i int) bool { return i > 3 }},
+			func() string {
+				return expected
+			}).
+		Otherwise(func() string { return "not greater than three" })
+
+	if output != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, output)
+	}
+}
+
+func TestWhenPatternString(t *testing.T) {
+	input := "hey there"
+	expected := "string matched"
+	output := NewMatcher[string, string](input).
+		With(WhenPattern[string]{func(i string) bool { return input == i }},
+			func() string {
+				return expected
+			}).
+		Otherwise(func() string { return "not greater than three" })
+
+	if output != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, output)
+	}
+}
+
+func TestWhenPatternWithStruct(t *testing.T) {
+	type predicate struct {
+		x int
+	}
+
+	input := predicate{33}
+	expected := "string matched"
+	output := NewMatcher[string, predicate](input).
+		With(WhenPattern[predicate]{func(i predicate) bool { return i.x == 33 }},
+			func() string {
+				return expected
+			}).
+		Otherwise(func() string { return "did not match" })
+
+	if output != expected {
+		t.Errorf("Expected '%s' but got '%s'", expected, output)
+	}
+}
