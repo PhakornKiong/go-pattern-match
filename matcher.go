@@ -1,8 +1,13 @@
 package pattern
 
 import (
+	"fmt"
 	"reflect"
 )
+
+type PatternMatcher[V any] interface {
+	Match(V) bool
+}
 
 type Handler[T any] func() T
 
@@ -26,6 +31,11 @@ func (m *Matcher[T, V]) With(pattern interface{}, fn Handler[T]) *Matcher[T, V] 
 		return m
 	}
 
+	if matcher, ok := pattern.(PatternMatcher[V]); ok {
+		fmt.Println("matched with pattern matcher")
+		fmt.Println(fmt.Sprintf("%+v", matcher))
+	}
+
 	switch p := pattern.(type) {
 	case whenPattern[V]:
 		if p.Match(m.value) {
@@ -34,6 +44,7 @@ func (m *Matcher[T, V]) With(pattern interface{}, fn Handler[T]) *Matcher[T, V] 
 	case notPattern:
 		if p.Match(m.value) {
 			m.patternMatched(fn)
+
 		}
 	case *stringPattern:
 		if p.Match(m.value) {

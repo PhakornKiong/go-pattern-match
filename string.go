@@ -66,7 +66,7 @@ func (s *stringPattern) Regex(value *regexp.Regexp) *stringPattern {
 	return newPattern
 }
 
-func (s *stringPattern) Match(value any) bool {
+func (s stringPattern) Match(value any) bool {
 	if reflect.TypeOf(value).Kind() != reflect.String {
 		return false
 	}
