@@ -2,6 +2,7 @@ package pattern
 
 import (
 	"math/big"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,15 +34,16 @@ func TestMatcherStruct(t *testing.T) {
 
 func TestMatcher(t *testing.T) {
 	input := 2
+	expected := "number: two"
+
 	output := NewMatcher[string](input).
-		With(2, func() string { return "number: two" }).
+		With(2, func() string { return expected }).
 		With(true, func() string { return "boolean: true" }).
 		With("hello", func() string { return "string: hello" }).
 		With(nil, func() string { return "null" }).
 		With(big.NewInt(20), func() string { return "bigint: 20n" }).
 		Otherwise(func() string { return "something else" })
 
-	expected := "number: two"
 	if output != expected {
 		t.Errorf("Expected '%s' but got '%s'", expected, output)
 	}
@@ -49,15 +51,16 @@ func TestMatcher(t *testing.T) {
 
 func TestMatcher2(t *testing.T) {
 	input := 100
+	expected := "something else"
+
 	output := NewMatcher[string](input).
 		With(2, func() string { return "number: two" }).
 		With(true, func() string { return "boolean: true" }).
 		With("hello", func() string { return "string: hello" }).
 		With(nil, func() string { return "null" }).
 		With(big.NewInt(20), func() string { return "bigint: 20n" }).
-		Otherwise(func() string { return "something else" })
+		Otherwise(func() string { return expected })
 
-	expected := "something else"
 	if output != expected {
 		t.Errorf("Expected '%s' but got '%s'", expected, output)
 	}
@@ -76,15 +79,78 @@ func TestWithString(t *testing.T) {
 }
 
 func TestNotPattern(t *testing.T) {
-	input := 2
-	output := NewMatcher[string, int](input).
-		With(Not[int](2), func() string { return "not number: two" }).
-		Otherwise(func() string { return "something else" })
+	unexpected := "did not match"
+	expected := "matched"
 
-	expected := "something else"
-	if output != expected {
-		t.Errorf("Expected '%s' but got '%s'", expected, output)
-	}
+	t.Run("int input positive case ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := 2
+		output := NewMatcher[string, int](input).
+			With(Not(3), func() string { return expected }).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+	t.Run("int input negative case ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := 2
+		output := NewMatcher[string, int](input).
+			With(Not(2), func() string { return unexpected }).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("string input positive case ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello"
+		output := NewMatcher[string, string](input).
+			With(Not("world"), func() string { return expected }).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+	t.Run("string input negative case ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello"
+		output := NewMatcher[string, string](input).
+			With(Not("hello"), func() string { return unexpected }).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+	t.Run("struct input positive case ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		type MyStruct struct {
+			x int
+		}
+
+		input := MyStruct{5}
+		output := NewMatcher[string, MyStruct](input).
+			With(Not(MyStruct{6}), func() string { return expected }).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+	t.Run("struct input negative case ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		type MyStruct struct {
+			x int
+		}
+
+		input := MyStruct{5}
+		output := NewMatcher[string, MyStruct](input).
+			With(Not(MyStruct{5}), func() string { return unexpected }).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
 }
 
 func TestWhenPattern(t *testing.T) {
@@ -212,4 +278,176 @@ func TestIntersection(t *testing.T) {
 		assert.Equal(expected, output)
 	})
 
+}
+func TestStringPattern(t *testing.T) {
+	unexpected := "did not match"
+	expected := "matched"
+
+	t.Run("int input negative case ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := 356
+		output := NewMatcher[string, int](input).
+			With(
+				String(),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("string input positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String(),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("StartsWith positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().StartsWith("hello"),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("StartsWith negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().StartsWith("world"),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("EndsWith positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().EndsWith("world"),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("EndsWith negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().EndsWith("hello"),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("MinLength positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().MinLength(5),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("MinLength negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello"
+		output := NewMatcher[string, string](input).
+			With(
+				String().MinLength(10),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("Regex positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().Regex(regexp.MustCompile("hello")),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("Regex negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().Regex(regexp.MustCompile("universe$")),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("Includes positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().Includes("world"),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("Includes negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string, string](input).
+			With(
+				String().Includes("universe"),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
 }

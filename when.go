@@ -1,7 +1,5 @@
 package pattern
 
-import "fmt"
-
 type Predicate[V any] func(V) bool
 
 type whenPattern[V any] struct {
@@ -13,7 +11,5 @@ func When[V any](predicate Predicate[V]) whenPattern[V] {
 }
 
 func (w *whenPattern[V]) Match(value V) bool {
-	fmt.Println(value)
-	fmt.Println(w.predicate(value))
 	return w.predicate(value)
 }

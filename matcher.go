@@ -31,6 +31,14 @@ func (m *Matcher[T, V]) With(pattern interface{}, fn Handler[T]) *Matcher[T, V] 
 		if p.Match(m.value) {
 			m.patternMatched(fn)
 		}
+	case notPattern:
+		if p.Match(m.value) {
+			m.patternMatched(fn)
+		}
+	case *stringPattern:
+		if p.Match(m.value) {
+			m.patternMatched(fn)
+		}
 	case unionPattern[V]:
 		if p.Match(m.value) {
 			m.patternMatched(fn)
