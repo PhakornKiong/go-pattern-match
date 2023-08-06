@@ -2,14 +2,14 @@ package pattern
 
 import "reflect"
 
-type notPattern[V any] struct {
-	pattern V
+type notPattern struct {
+	pattern any
 }
 
-func Not[V any](pattern V) notPattern[V] {
-	return notPattern[V]{pattern: pattern}
+func Not(pattern any) notPattern {
+	return notPattern{pattern: pattern}
 }
 
-func (n *notPattern[V]) Match(value V) bool {
+func (n *notPattern) Match(value any) bool {
 	return !reflect.DeepEqual(value, n.pattern)
 }
