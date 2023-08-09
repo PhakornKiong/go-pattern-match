@@ -192,7 +192,7 @@ func TestWhenPatternWithStruct(t *testing.T) {
 	}
 }
 
-func TestUnion(t *testing.T) {
+func TestMatcherWithUnion(t *testing.T) {
 	unexpected := "did not match"
 	expected := "matched"
 	t.Run("int intput positive case", func(t *testing.T) {
@@ -328,7 +328,7 @@ func TestUnion(t *testing.T) {
 
 }
 
-func TestIntersection(t *testing.T) {
+func TestMatcherWithIntersection(t *testing.T) {
 	unexpected := "did not match"
 	t.Run("int intput positive case", func(t *testing.T) {
 		assert := assert.New(t)
