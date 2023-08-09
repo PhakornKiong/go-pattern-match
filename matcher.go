@@ -1,12 +1,15 @@
 package pattern
 
 import (
-	"fmt"
 	"reflect"
 )
 
-type PatternMatcher[V any] interface {
+type Patterner[V any] interface {
 	Match(V) bool
+}
+
+type AnyPatterner interface {
+	Match(any) bool
 }
 
 type Handler[T any] func() T
@@ -26,55 +29,24 @@ func (m *Matcher[T, V]) patternMatched(fn Handler[T]) {
 	m.isMatched = true
 }
 
-func (m *Matcher[T, V]) With(pattern interface{}, fn Handler[T]) *Matcher[T, V] {
+func (m *Matcher[T, V]) With(pattern any, fn Handler[T]) *Matcher[T, V] {
 	if m.isMatched {
 		return m
-	}
-
-	if matcher, ok := pattern.(PatternMatcher[V]); ok {
-		fmt.Println("matched with pattern matcher")
-		fmt.Println(fmt.Sprintf("%+v", matcher))
 	}
 
 	switch p := pattern.(type) {
-	case whenPattern[V]:
+	// Matches with the AnyPatterner interface
+	// For example, notPattern and stringPattern
+	case AnyPatterner:
 		if p.Match(m.value) {
 			m.patternMatched(fn)
 		}
-	case notPattern:
-		if p.Match(m.value) {
-			m.patternMatched(fn)
-
-		}
-	case *stringPattern:
-		if p.Match(m.value) {
-			m.patternMatched(fn)
-		}
-	case unionPattern[V]:
-		if p.Match(m.value) {
-			m.patternMatched(fn)
-		}
-	case intersectionPattern[V]:
-		if p.Match(m.value) {
-			m.patternMatched(fn)
-		}
-	default:
-		if reflect.DeepEqual(m.value, pattern) {
+	case V:
+		if reflect.DeepEqual(m.value, p) {
 			m.patternMatched(fn)
 		}
 	}
 
-	return m
-}
-
-func (m *Matcher[T, V]) WithString(fn Handler[T]) *Matcher[T, V] {
-	if m.isMatched {
-		return m
-	}
-
-	if reflect.TypeOf(m.value).Kind() == reflect.String {
-		m.patternMatched(fn)
-	}
 	return m
 }
 

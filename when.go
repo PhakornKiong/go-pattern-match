@@ -10,6 +10,10 @@ func When[V any](predicate Predicate[V]) whenPattern[V] {
 	return whenPattern[V]{predicate: predicate}
 }
 
-func (w whenPattern[V]) Match(value V) bool {
-	return w.predicate(value)
+func (w whenPattern[V]) Match(value any) bool {
+	val, ok := value.(V)
+	if !ok {
+		return false
+	}
+	return w.predicate(val)
 }

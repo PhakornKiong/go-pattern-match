@@ -15,12 +15,12 @@ type stringPattern struct {
 	regex      *regexp.Regexp
 }
 
-func String() *stringPattern {
-	return &stringPattern{}
+func String() stringPattern {
+	return stringPattern{}
 }
 
-func (s *stringPattern) clone() *stringPattern {
-	return &stringPattern{
+func (s stringPattern) clone() stringPattern {
+	return stringPattern{
 		startsWith: s.startsWith,
 		endsWith:   s.endsWith,
 		minLength:  s.minLength,
@@ -30,37 +30,37 @@ func (s *stringPattern) clone() *stringPattern {
 	}
 }
 
-func (s *stringPattern) StartsWith(value string) *stringPattern {
+func (s stringPattern) StartsWith(value string) stringPattern {
 	newPattern := s.clone()
 	newPattern.startsWith = value
 	return newPattern
 }
 
-func (s *stringPattern) EndsWith(value string) *stringPattern {
+func (s stringPattern) EndsWith(value string) stringPattern {
 	newPattern := s.clone()
 	newPattern.endsWith = value
 	return newPattern
 }
 
-func (s *stringPattern) MinLength(value int) *stringPattern {
+func (s stringPattern) MinLength(value int) stringPattern {
 	newPattern := s.clone()
 	newPattern.minLength = value
 	return newPattern
 }
 
-func (s *stringPattern) MaxLength(value int) *stringPattern {
+func (s stringPattern) MaxLength(value int) stringPattern {
 	newPattern := s.clone()
 	newPattern.maxLength = value
 	return newPattern
 }
 
-func (s *stringPattern) Includes(value string) *stringPattern {
+func (s stringPattern) Includes(value string) stringPattern {
 	newPattern := s.clone()
 	newPattern.includes = value
 	return newPattern
 }
 
-func (s *stringPattern) Regex(value *regexp.Regexp) *stringPattern {
+func (s stringPattern) Regex(value *regexp.Regexp) stringPattern {
 	newPattern := s.clone()
 	newPattern.regex = value
 	return newPattern

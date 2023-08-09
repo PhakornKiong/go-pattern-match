@@ -1,18 +1,37 @@
 package pattern
 
-import "reflect"
+import (
+	"reflect"
+)
 
-type intersectionPattern[V any] struct {
+type intersection[V any] struct {
 	patterns []V
 }
 
-func Intersection[V any](patterns ...V) intersectionPattern[V] {
+func Intersection[V any](patterns ...V) intersection[V] {
+	return intersection[V]{patterns: patterns}
+}
+
+func (i intersection[V]) Match(value any) bool {
+	for _, subPattern := range i.patterns {
+		if !reflect.DeepEqual(value, subPattern) {
+			return false
+		}
+	}
+	return true
+}
+
+type intersectionPattern[V AnyPatterner] struct {
+	patterns []V
+}
+
+func IntersectionPattern[V AnyPatterner](patterns ...V) intersectionPattern[V] {
 	return intersectionPattern[V]{patterns: patterns}
 }
 
-func (i intersectionPattern[V]) Match(value V) bool {
-	for _, subPattern := range i.patterns {
-		if !reflect.DeepEqual(value, subPattern) {
+func (u intersectionPattern[V]) Match(value any) bool {
+	for _, subPattern := range u.patterns {
+		if !subPattern.Match(value) {
 			return false
 		}
 	}

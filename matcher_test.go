@@ -1,7 +1,9 @@
 package pattern
 
 import (
+	"fmt"
 	"math/big"
+	"reflect"
 	"regexp"
 	"testing"
 
@@ -24,7 +26,7 @@ func TestMatcherStruct(t *testing.T) {
 	input := MyStruct{25, 35}
 	output := NewMatcher[OtherStruct](input).
 		With(MyStruct{25, 35}, func() OtherStruct { return expected }).
-		With(MyStruct{x: 25}, func() OtherStruct { return OtherStruct{} }).
+		With(MyStruct{25, 35}, func() OtherStruct { return OtherStruct{} }).
 		Otherwise(func() OtherStruct { return OtherStruct{} })
 
 	if output != expected {
@@ -61,18 +63,6 @@ func TestMatcher2(t *testing.T) {
 		With(big.NewInt(20), func() string { return "bigint: 20n" }).
 		Otherwise(func() string { return expected })
 
-	if output != expected {
-		t.Errorf("Expected '%s' but got '%s'", expected, output)
-	}
-}
-
-func TestWithString(t *testing.T) {
-	input := "hello world"
-	output := NewMatcher[string](input).
-		WithString(func() string { return "number: two" }).
-		Otherwise(func() string { return "something else" })
-
-	expected := "number: two"
 	if output != expected {
 		t.Errorf("Expected '%s' but got '%s'", expected, output)
 	}
@@ -202,33 +192,119 @@ func TestWhenPatternWithStruct(t *testing.T) {
 	}
 }
 
-func TestUnionPatternString(t *testing.T) {
-
-	input := "test union"
+func TestUnion(t *testing.T) {
+	unexpected := "did not match"
 	expected := "matched"
-	output := NewMatcher[string, string](input).
-		With(Union[string]("five", "six", "test union"), func() string { return expected }).
-		Otherwise(func() string { return "did not match" })
+	t.Run("int intput positive case", func(t *testing.T) {
+		assert := assert.New(t)
 
-	if output != expected {
-		t.Errorf("Expected '%s' but got '%s'", expected, output)
-	}
-}
+		input := 356
+		output := NewMatcher[string, int](input).
+			With(
+				Union[int](25, 356, 123),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return "did not match" })
 
-func TestUnionPatternInt(t *testing.T) {
+		assert.Equal(expected, output)
+	})
 
-	input := 356
-	expected := "matched"
-	output := NewMatcher[string, int](input).
-		With(
-			Union[int](25, 356, 123),
-			func() string { return expected },
-		).
-		Otherwise(func() string { return "did not match" })
+	t.Run("int intput negative case", func(t *testing.T) {
+		assert := assert.New(t)
 
-	if output != expected {
-		t.Errorf("Expected '%s' but got '%s'", expected, output)
-	}
+		input := 356
+		output := NewMatcher[string, int](input).
+			With(
+				Union[int](2, 1, 3),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("string input positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "test union"
+		output := NewMatcher[string, string](input).
+			With(Union[string]("five", "six", input), func() string { return expected }).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("string input negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "test union"
+		expected := "matched"
+		output := NewMatcher[string, string](input).
+			With(Union[string]("five", "six", "nine"), func() string { return unexpected }).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("stringPattern input positive case", func(t *testing.T) {
+		assert := assert.New(t)
+		fmt.Printf("%+v", reflect.TypeOf(UnionPattern(String().EndsWith("union"))))
+
+		input := "test union"
+		expected := "matched"
+		output := NewMatcher[string, string](input).
+			With(UnionPattern(String().EndsWith("union")),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("intersectionPattern input positive case", func(t *testing.T) {
+		assert := assert.New(t)
+		fmt.Printf("%+v", reflect.TypeOf(UnionPattern(String().EndsWith("union"))))
+
+		input := "test union"
+		expected := "matched"
+
+		i := IntersectionPattern(
+			String().EndsWith("union"),
+			String().MinLength(5),
+			String().MaxLength(10),
+		)
+
+		output := NewMatcher[string, string](input).
+			With(i,
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("intersectionPattern input negative case", func(t *testing.T) {
+		assert := assert.New(t)
+		fmt.Printf("%+v", reflect.TypeOf(UnionPattern(String().EndsWith("union"))))
+
+		input := "test union"
+		expected := "matched"
+
+		i := IntersectionPattern(
+			String().EndsWith("union"),
+			String().MinLength(5),
+			String().MaxLength(9),
+		)
+
+		output := NewMatcher[string, string](input).
+			With(i,
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
 }
 
 func TestIntersection(t *testing.T) {
@@ -279,6 +355,7 @@ func TestIntersection(t *testing.T) {
 	})
 
 }
+
 func TestStringPattern(t *testing.T) {
 	unexpected := "did not match"
 	expected := "matched"
