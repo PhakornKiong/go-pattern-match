@@ -4,10 +4,6 @@ import (
 	"reflect"
 )
 
-type Patterner[V any] interface {
-	Match(V) bool
-}
-
 type AnyPatterner interface {
 	Match(any) bool
 }

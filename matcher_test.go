@@ -68,7 +68,7 @@ func TestMatcher2(t *testing.T) {
 	}
 }
 
-func TestNotPattern(t *testing.T) {
+func TestMatcherWithNotPattern(t *testing.T) {
 	unexpected := "did not match"
 	expected := "matched"
 
@@ -143,7 +143,7 @@ func TestNotPattern(t *testing.T) {
 	})
 }
 
-func TestWhenPattern(t *testing.T) {
+func TestMatcherWithWhenPattern(t *testing.T) {
 	input := 5
 	expected := "greater than three"
 	output := NewMatcher[string, int](input).
@@ -301,6 +301,27 @@ func TestUnion(t *testing.T) {
 				func() string { return unexpected },
 			).
 			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("unionPattern input positive case", func(t *testing.T) {
+		assert := assert.New(t)
+		fmt.Printf("%+v", reflect.TypeOf(UnionPattern(String().EndsWith("union"))))
+
+		input := "test union"
+		expected := "matched"
+
+		u1 := UnionPattern(String().EndsWith("union"), String().StartsWith("test"))
+		u2 := UnionPattern(String().EndsWith("union"), String().StartsWith("test"))
+
+		i := IntersectionPattern(u1, u2)
+
+		output := NewMatcher[string, string](input).
+			With(i,
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
 
 		assert.Equal(expected, output)
 	})
