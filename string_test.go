@@ -11,14 +11,14 @@ func TestString(t *testing.T) {
 	t.Run("String with string input", func(t *testing.T) {
 		assert := assert.New(t)
 		input := "test"
-		w := Union(input, "hello", "there")
+		w := String()
 
 		output := w.Match(input)
 
 		assert.True(output)
 	})
 
-	t.Run("String with number", func(t *testing.T) {
+	t.Run("String with int input", func(t *testing.T) {
 		assert := assert.New(t)
 		input := 25
 		w := String()
