@@ -10,12 +10,20 @@ type AnyPatterner interface {
 
 type Handler[T any] func() T
 
+// Matcher is a generic struct that matches a value of type V to a response of type T.
+// It has three fields: value, isMatched and response.
+// value is the input that needs to be matched.
+// isMatched is a boolean that indicates whether a match has been found.
+// response is the output that is returned when a match is found.
 type Matcher[T any, V any] struct {
 	value     V
 	isMatched bool
 	response  T
 }
 
+// NewMatcher is a function that creates a new Matcher instance.
+// It takes a value of any type V and returns a pointer to a Matcher instance.
+// The returned Matcher instance has its value field set to the input value and isMatched field set to false by default.
 func NewMatcher[T any, V any](value V) *Matcher[T, V] {
 	return &Matcher[T, V]{value: value}
 }
