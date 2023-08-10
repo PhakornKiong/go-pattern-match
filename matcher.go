@@ -1,6 +1,7 @@
 package pattern
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -42,18 +43,92 @@ func (m *Matcher[T, V]) With(pattern any, fn Handler[T]) *Matcher[T, V] {
 	// Matches with the AnyPatterner interface
 	// For example, notPattern and stringPattern
 	case AnyPatterner:
+		// fmt.Println("ttttttthere here")
+		// fmt.Println(fmt.Sprintf("Value: %+v, Type: %s", p, reflect.TypeOf(p)))
 		if p.Match(m.value) {
 			m.patternMatched(fn)
 		}
-	case V:
-		if matchesPattern(m.value, p) {
+	case []AnyPatterner:
+		// fmt.Println("I AM HERE")
+		var allMatched = true
+		patternVal := reflect.ValueOf(p)
+		value := reflect.ValueOf(m.value)
+
+		if value.Len() != patternVal.Len() {
+			// fmt.Println("Break here")
+			break
+		}
+
+		for i := 0; i < value.Len(); i++ {
+			val := value.Index(i)
+
+			// fmt.Println(fmt.Sprintf("Value: %+v, Type: %v", val))
+			// fmt.Printf("Content of p[%d]: %+v, Type: %s\n", i, p[i], reflect.TypeOf(p[i]))
+
+			// fmt.Printf("Content of p[%d]: %+v,\n", i, val.Interface())
+			// fmt.Printf("Content of p[%d]: %+v,\n", i, !p[i].Match(val.Interface()))
+
+			if !p[i].Match(val.Interface()) {
+				allMatched = false
+				break
+			}
+		}
+
+		if allMatched {
 			m.patternMatched(fn)
 		}
-		// if reflect.DeepEqual(m.value, p) {
-		// 	m.patternMatched(fn)
-		// }
-	}
+	case V:
+		// Handle special case where slice/array is passed in
+		// Compare each ith element against the ith pattern
+		if reflect.TypeOf(p).Kind() == reflect.Array || reflect.TypeOf(p).Kind() == reflect.Slice {
+			// fmt.Println("I AM HERE")
+			patternVal := reflect.ValueOf(p)
+			value := reflect.ValueOf(m.value)
+			// fmt.Println(fmt.Sprintf("%+v type", reflect.TypeOf(p).Kind()))
+			// fmt.Println(fmt.Sprintf("%+v and %+v", p, m.value))
+			// fmt.Println(fmt.Sprintf("%+v", patternVal.Len()))
 
+			if value.Len() != patternVal.Len() {
+				fmt.Println("Break here")
+				break
+			}
+
+			var allMatched = true
+			for i := 0; i < patternVal.Len(); i++ {
+
+				firstVal := patternVal.Index(i)
+				secondVal := value.Index(i)
+
+				if firstVal.Type().Implements(reflect.TypeOf((*AnyPatterner)(nil)).Elem()) && secondVal.Type().Implements(reflect.TypeOf((*AnyPatterner)(nil)).Elem()) {
+					if firstVal.Interface().(AnyPatterner).Match(secondVal.Interface()) {
+						fmt.Println("Match found between", firstVal, "and", secondVal)
+					} else {
+						fmt.Println("No match found between", firstVal, "and", secondVal)
+					}
+					continue
+				}
+
+				if !reflect.DeepEqual(firstVal.Interface(), secondVal.Interface()) {
+					allMatched = false
+					break
+				}
+			}
+
+			if allMatched {
+				m.patternMatched(fn)
+			}
+
+		}
+
+	// if reflect.DeepEqual(m.value, p) {
+	// 	m.patternMatched(fn)
+	// }
+
+	default:
+		// fmt.Println(reflect.TypeOf(m.value))
+		// fmt.Println(reflect.TypeOf(pattern))
+
+	}
 	return m
 }
 
