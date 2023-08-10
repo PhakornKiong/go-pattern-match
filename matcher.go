@@ -46,9 +46,12 @@ func (m *Matcher[T, V]) With(pattern any, fn Handler[T]) *Matcher[T, V] {
 			m.patternMatched(fn)
 		}
 	case V:
-		if reflect.DeepEqual(m.value, p) {
+		if matchesPattern(m.value, p) {
 			m.patternMatched(fn)
 		}
+		// if reflect.DeepEqual(m.value, p) {
+		// 	m.patternMatched(fn)
+		// }
 	}
 
 	return m
@@ -59,4 +62,32 @@ func (m *Matcher[T, V]) Otherwise(fn Handler[T]) T {
 		m.response = fn()
 	}
 	return m.response
+}
+
+func matchesPattern(input, pattern interface{}) bool {
+	inputVal := reflect.ValueOf(input)
+	patternVal := reflect.ValueOf(pattern)
+
+	if inputVal.Type() != patternVal.Type() {
+		return false
+	}
+
+	for i := 0; i < patternVal.NumField(); i++ {
+		if !patternVal.Field(i).IsZero() {
+			inputField := inputVal.Field(i)
+			patternField := patternVal.Field(i)
+
+			if patternField.Kind() == reflect.Struct {
+				if !matchesPattern(inputField.Interface(), patternField.Interface()) {
+					return false
+				}
+			} else {
+				if inputField.Interface() != patternField.Interface() {
+					return false
+				}
+			}
+		}
+	}
+
+	return true
 }
