@@ -1,6 +1,8 @@
-package switchunion
+package main
 
 import (
+	"fmt"
+
 	"github.com/phakornkiong/go-pattern"
 )
 
@@ -20,11 +22,11 @@ func FoodSorter(input string) (output string) {
 func FoodSorterWithPattern(input string) (output string) {
 
 	output = pattern.NewMatcher[string](input).
-		With(
+		WithPattern(
 			pattern.Union("apple", "strawberry", "orange"),
 			func() string { return "fruit" },
 		).
-		With(
+		WithPattern(
 			pattern.Union("carrot", "pok-choy", "cabbage"),
 			func() string { return "vegetable" },
 		).
@@ -33,8 +35,8 @@ func FoodSorterWithPattern(input string) (output string) {
 	return output
 }
 
-func RunComparisonFoodMatcher() {
-	FoodSorterWithPattern("apple")  // "fruit"
-	FoodSorterWithPattern("carrot") // "vegetable"
-	FoodSorterWithPattern("candy")  // "unknown"
+func main() {
+	fmt.Println(FoodSorterWithPattern("apple"))  // "fruit"
+	fmt.Println(FoodSorterWithPattern("carrot")) // "vegetable"
+	fmt.Println(FoodSorterWithPattern("candy"))  // "unknown"
 }

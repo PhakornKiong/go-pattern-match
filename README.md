@@ -4,7 +4,7 @@ Pattern Matching library for Go
 
 ## Key Components
 
-- `AnyPatterner`: This is an interface that requires the implementation of a `Match` function. Any type that implements this interface can be used as a pattern in the matcher.
+- `Pattener`: This is an interface that requires the implementation of a `Match` function. Any type that implements this interface can be used as a pattern in the matcher.
 
 - `Handler`: This is a function type that returns a generic type `T`. This function is called when a match is found.
 

@@ -14,11 +14,11 @@ func (n not) Match(value any) bool {
 	return !reflect.DeepEqual(value, n.pattern)
 }
 
-type notPattern[V AnyPatterner] struct {
+type notPattern[V Pattener] struct {
 	pattern V
 }
 
-func NotPattern[V AnyPatterner](pattern V) notPattern[V] {
+func NotPattern[V Pattener](pattern V) notPattern[V] {
 	return notPattern[V]{pattern: pattern}
 }
 

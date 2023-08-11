@@ -1,12 +1,15 @@
 package pattern
 
 import (
-	"fmt"
 	"reflect"
 )
 
-type AnyPatterner interface {
+type Pattener interface {
 	Match(any) bool
+}
+
+func Patteners(patterns ...Pattener) []Pattener {
+	return patterns
 }
 
 type Handler[T any] func() T
@@ -34,41 +37,63 @@ func (m *Matcher[T, V]) patternMatched(fn Handler[T]) {
 	m.isMatched = true
 }
 
-func (m *Matcher[T, V]) With(pattern any, fn Handler[T]) *Matcher[T, V] {
+func (m *Matcher[T, V]) WithPattern(pattern Pattener, fn Handler[T]) *Matcher[T, V] {
+	if !m.isMatched && pattern.Match(m.value) {
+		m.patternMatched(fn)
+	}
+	return m
+}
+
+func (m *Matcher[T, V]) WithPatterns(patterns []Pattener, fn Handler[T]) *Matcher[T, V] {
 	if m.isMatched {
 		return m
 	}
 
-	switch p := pattern.(type) {
-	// Matches with the AnyPatterner interface
-	// For example, notPattern and stringPattern
-	case AnyPatterner:
-		// fmt.Println("ttttttthere here")
-		// fmt.Println(fmt.Sprintf("Value: %+v, Type: %s", p, reflect.TypeOf(p)))
-		if p.Match(m.value) {
-			m.patternMatched(fn)
+	var allMatched = true
+
+	value := reflect.ValueOf(m.value)
+
+	if value.Len() != len(patterns) {
+		return m
+	}
+
+	for i := 0; i < value.Len(); i++ {
+		val := value.Index(i)
+
+		if !patterns[i].Match(val.Interface()) {
+			allMatched = false
+			break
 		}
-	case []AnyPatterner:
+	}
+
+	if allMatched {
+		m.patternMatched(fn)
+	}
+
+	return m
+}
+
+func (m *Matcher[T, V]) WithValues(pattern V, fn Handler[T]) *Matcher[T, V] {
+	if m.isMatched {
+		return m
+	}
+
+	if reflect.TypeOf(pattern).Kind() == reflect.Array || reflect.TypeOf(pattern).Kind() == reflect.Slice {
 		// fmt.Println("I AM HERE")
-		var allMatched = true
-		patternVal := reflect.ValueOf(p)
+		patternVal := reflect.ValueOf(pattern)
 		value := reflect.ValueOf(m.value)
 
 		if value.Len() != patternVal.Len() {
-			// fmt.Println("Break here")
-			break
+			return m
 		}
 
-		for i := 0; i < value.Len(); i++ {
-			val := value.Index(i)
+		var allMatched = true
+		for i := 0; i < patternVal.Len(); i++ {
 
-			// fmt.Println(fmt.Sprintf("Value: %+v, Type: %v", val))
-			// fmt.Printf("Content of p[%d]: %+v, Type: %s\n", i, p[i], reflect.TypeOf(p[i]))
+			firstVal := patternVal.Index(i)
+			secondVal := value.Index(i)
 
-			// fmt.Printf("Content of p[%d]: %+v,\n", i, val.Interface())
-			// fmt.Printf("Content of p[%d]: %+v,\n", i, !p[i].Match(val.Interface()))
-
-			if !p[i].Match(val.Interface()) {
+			if !reflect.DeepEqual(firstVal.Interface(), secondVal.Interface()) {
 				allMatched = false
 				break
 			}
@@ -77,58 +102,22 @@ func (m *Matcher[T, V]) With(pattern any, fn Handler[T]) *Matcher[T, V] {
 		if allMatched {
 			m.patternMatched(fn)
 		}
-	case V:
-		// Handle special case where slice/array is passed in
-		// Compare each ith element against the ith pattern
-		if reflect.TypeOf(p).Kind() == reflect.Array || reflect.TypeOf(p).Kind() == reflect.Slice {
-			// fmt.Println("I AM HERE")
-			patternVal := reflect.ValueOf(p)
-			value := reflect.ValueOf(m.value)
-			// fmt.Println(fmt.Sprintf("%+v type", reflect.TypeOf(p).Kind()))
-			// fmt.Println(fmt.Sprintf("%+v and %+v", p, m.value))
-			// fmt.Println(fmt.Sprintf("%+v", patternVal.Len()))
 
-			if value.Len() != patternVal.Len() {
-				fmt.Println("Break here")
-				break
-			}
-
-			var allMatched = true
-			for i := 0; i < patternVal.Len(); i++ {
-
-				firstVal := patternVal.Index(i)
-				secondVal := value.Index(i)
-
-				if firstVal.Type().Implements(reflect.TypeOf((*AnyPatterner)(nil)).Elem()) && secondVal.Type().Implements(reflect.TypeOf((*AnyPatterner)(nil)).Elem()) {
-					if firstVal.Interface().(AnyPatterner).Match(secondVal.Interface()) {
-						fmt.Println("Match found between", firstVal, "and", secondVal)
-					} else {
-						fmt.Println("No match found between", firstVal, "and", secondVal)
-					}
-					continue
-				}
-
-				if !reflect.DeepEqual(firstVal.Interface(), secondVal.Interface()) {
-					allMatched = false
-					break
-				}
-			}
-
-			if allMatched {
-				m.patternMatched(fn)
-			}
-
-		}
-
-	// if reflect.DeepEqual(m.value, p) {
-	// 	m.patternMatched(fn)
-	// }
-
-	default:
-		// fmt.Println(reflect.TypeOf(m.value))
-		// fmt.Println(reflect.TypeOf(pattern))
-
+		return m
 	}
+
+	return m
+}
+
+func (m *Matcher[T, V]) WithValue(pattern V, fn Handler[T]) *Matcher[T, V] {
+	if m.isMatched {
+		return m
+	}
+
+	if reflect.DeepEqual(m.value, pattern) {
+		m.patternMatched(fn)
+	}
+
 	return m
 }
 
@@ -137,32 +126,4 @@ func (m *Matcher[T, V]) Otherwise(fn Handler[T]) T {
 		m.response = fn()
 	}
 	return m.response
-}
-
-func matchesPattern(input, pattern interface{}) bool {
-	inputVal := reflect.ValueOf(input)
-	patternVal := reflect.ValueOf(pattern)
-
-	if inputVal.Type() != patternVal.Type() {
-		return false
-	}
-
-	for i := 0; i < patternVal.NumField(); i++ {
-		if !patternVal.Field(i).IsZero() {
-			inputField := inputVal.Field(i)
-			patternField := patternVal.Field(i)
-
-			if patternField.Kind() == reflect.Struct {
-				if !matchesPattern(inputField.Interface(), patternField.Interface()) {
-					return false
-				}
-			} else {
-				if inputField.Interface() != patternField.Interface() {
-					return false
-				}
-			}
-		}
-	}
-
-	return true
 }

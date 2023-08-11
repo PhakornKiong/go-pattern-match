@@ -42,19 +42,19 @@ func main() {
 
 	patternMatcher := func(input CurrencyPair) string {
 		return pattern.NewMatcher[string, CurrencyPair](input).
-			With(
+			WithValues(
 				CurrencyPair{"BTC", "ETH"},
 				func() string { return "Concrete BTC to ETH" },
 			).
-			With(
-				[]pattern.AnyPatterner{isUsdStable, isUsdStable},
+			WithPatterns(
+				pattern.Patteners(isUsdStable, isUsdStable),
 				func() string { return "both USD Stables strategy" },
 			).
-			With(
-				[]pattern.AnyPatterner{isUsdStable, isFiat},
+			WithPatterns(
+				[]pattern.Pattener{isUsdStable, isFiat},
 				func() string { return "USD Stables to fiat" },
 			).
-			With(
+			WithPattern(
 				isSameCurrency,
 				func() string { return "same currency strategy" },
 			).

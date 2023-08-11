@@ -2,7 +2,6 @@ package pattern
 
 import (
 	"fmt"
-	"math/big"
 	"reflect"
 	"regexp"
 	"testing"
@@ -25,8 +24,8 @@ func TestMatcherStruct(t *testing.T) {
 
 	input := MyStruct{25, 35}
 	output := NewMatcher[OtherStruct](input).
-		With(MyStruct{25, 35}, func() OtherStruct { return expected }).
-		With(MyStruct{25, 35}, func() OtherStruct { return OtherStruct{} }).
+		WithValue(MyStruct{25, 35}, func() OtherStruct { return expected }).
+		WithValue(MyStruct{25, 35}, func() OtherStruct { return OtherStruct{} }).
 		Otherwise(func() OtherStruct { return OtherStruct{} })
 
 	if output != expected {
@@ -39,11 +38,7 @@ func TestMatcher(t *testing.T) {
 	expected := "number: two"
 
 	output := NewMatcher[string](input).
-		With(2, func() string { return expected }).
-		With(true, func() string { return "boolean: true" }).
-		With("hello", func() string { return "string: hello" }).
-		With(nil, func() string { return "null" }).
-		With(big.NewInt(20), func() string { return "bigint: 20n" }).
+		WithValue(2, func() string { return expected }).
 		Otherwise(func() string { return "something else" })
 
 	if output != expected {
@@ -56,11 +51,7 @@ func TestMatcher2(t *testing.T) {
 	expected := "something else"
 
 	output := NewMatcher[string](input).
-		With(2, func() string { return "number: two" }).
-		With(true, func() string { return "boolean: true" }).
-		With("hello", func() string { return "string: hello" }).
-		With(nil, func() string { return "null" }).
-		With(big.NewInt(20), func() string { return "bigint: 20n" }).
+		WithValue(2, func() string { return "number: two" }).
 		Otherwise(func() string { return expected })
 
 	if output != expected {
@@ -77,7 +68,7 @@ func TestMatcherWithNotPattern(t *testing.T) {
 
 		input := 2
 		output := NewMatcher[string, int](input).
-			With(Not(3), func() string { return expected }).
+			WithPattern(Not(3), func() string { return expected }).
 			Otherwise(func() string { return unexpected })
 
 		assert.Equal(expected, output)
@@ -87,7 +78,7 @@ func TestMatcherWithNotPattern(t *testing.T) {
 
 		input := 2
 		output := NewMatcher[string, int](input).
-			With(Not(2), func() string { return unexpected }).
+			WithPattern(Not(2), func() string { return unexpected }).
 			Otherwise(func() string { return expected })
 
 		assert.Equal(expected, output)
@@ -98,7 +89,7 @@ func TestMatcherWithNotPattern(t *testing.T) {
 
 		input := "hello"
 		output := NewMatcher[string, string](input).
-			With(Not("world"), func() string { return expected }).
+			WithPattern(Not("world"), func() string { return expected }).
 			Otherwise(func() string { return unexpected })
 
 		assert.Equal(expected, output)
@@ -108,7 +99,7 @@ func TestMatcherWithNotPattern(t *testing.T) {
 
 		input := "hello"
 		output := NewMatcher[string, string](input).
-			With(Not("hello"), func() string { return unexpected }).
+			WithPattern(Not("hello"), func() string { return unexpected }).
 			Otherwise(func() string { return expected })
 
 		assert.Equal(expected, output)
@@ -122,7 +113,7 @@ func TestMatcherWithNotPattern(t *testing.T) {
 
 		input := MyStruct{5}
 		output := NewMatcher[string, MyStruct](input).
-			With(Not(MyStruct{6}), func() string { return expected }).
+			WithPattern(Not(MyStruct{6}), func() string { return expected }).
 			Otherwise(func() string { return unexpected })
 
 		assert.Equal(expected, output)
@@ -136,7 +127,7 @@ func TestMatcherWithNotPattern(t *testing.T) {
 
 		input := MyStruct{5}
 		output := NewMatcher[string, MyStruct](input).
-			With(Not(MyStruct{5}), func() string { return unexpected }).
+			WithPattern(Not(MyStruct{5}), func() string { return unexpected }).
 			Otherwise(func() string { return expected })
 
 		assert.Equal(expected, output)
@@ -147,7 +138,7 @@ func TestMatcherWithWhenPattern(t *testing.T) {
 	input := 5
 	expected := "greater than three"
 	output := NewMatcher[string, int](input).
-		With(When[int](func(i int) bool { return i > 3 }),
+		WithPattern(When[int](func(i int) bool { return i > 3 }),
 			func() string {
 				return expected
 			}).
@@ -162,7 +153,7 @@ func TestWhenPatternString(t *testing.T) {
 	input := "hey there"
 	expected := "string matched"
 	output := NewMatcher[string, string](input).
-		With(When[string](func(i string) bool { return input == i }),
+		WithPattern(When[string](func(i string) bool { return input == i }),
 			func() string {
 				return expected
 			}).
@@ -181,7 +172,7 @@ func TestWhenPatternWithStruct(t *testing.T) {
 	input := predicate{33}
 	expected := "string matched"
 	output := NewMatcher[string, predicate](input).
-		With(When[predicate](func(i predicate) bool { return i.x == 33 }),
+		WithPattern(When[predicate](func(i predicate) bool { return i.x == 33 }),
 			func() string {
 				return expected
 			}).
@@ -200,7 +191,7 @@ func TestMatcherWithUnion(t *testing.T) {
 
 		input := 356
 		output := NewMatcher[string, int](input).
-			With(
+			WithPattern(
 				Union[int](25, 356, 123),
 				func() string { return expected },
 			).
@@ -214,7 +205,7 @@ func TestMatcherWithUnion(t *testing.T) {
 
 		input := 356
 		output := NewMatcher[string, int](input).
-			With(
+			WithPattern(
 				Union[int](2, 1, 3),
 				func() string { return unexpected },
 			).
@@ -228,7 +219,7 @@ func TestMatcherWithUnion(t *testing.T) {
 
 		input := "test union"
 		output := NewMatcher[string, string](input).
-			With(Union[string]("five", "six", input), func() string { return expected }).
+			WithPattern(Union[string]("five", "six", input), func() string { return expected }).
 			Otherwise(func() string { return unexpected })
 
 		assert.Equal(expected, output)
@@ -240,7 +231,7 @@ func TestMatcherWithUnion(t *testing.T) {
 		input := "test union"
 		expected := "matched"
 		output := NewMatcher[string, string](input).
-			With(Union[string]("five", "six", "nine"), func() string { return unexpected }).
+			WithPattern(Union[string]("five", "six", "nine"), func() string { return unexpected }).
 			Otherwise(func() string { return expected })
 
 		assert.Equal(expected, output)
@@ -253,7 +244,7 @@ func TestMatcherWithUnion(t *testing.T) {
 		input := "test union"
 		expected := "matched"
 		output := NewMatcher[string, string](input).
-			With(UnionPattern(String().EndsWith("union")),
+			WithPattern(UnionPattern(String().EndsWith("union")),
 				func() string { return expected },
 			).
 			Otherwise(func() string { return unexpected })
@@ -275,7 +266,7 @@ func TestMatcherWithUnion(t *testing.T) {
 		)
 
 		output := NewMatcher[string, string](input).
-			With(i,
+			WithPattern(i,
 				func() string { return expected },
 			).
 			Otherwise(func() string { return unexpected })
@@ -297,7 +288,7 @@ func TestMatcherWithUnion(t *testing.T) {
 		)
 
 		output := NewMatcher[string, string](input).
-			With(i,
+			WithPattern(i,
 				func() string { return unexpected },
 			).
 			Otherwise(func() string { return expected })
@@ -318,7 +309,7 @@ func TestMatcherWithUnion(t *testing.T) {
 		i := IntersectionPattern(u1, u2)
 
 		output := NewMatcher[string, string](input).
-			With(i,
+			WithPattern(i,
 				func() string { return expected },
 			).
 			Otherwise(func() string { return unexpected })
@@ -336,7 +327,7 @@ func TestMatcherWithIntersection(t *testing.T) {
 		input := 356
 		expected := "matched"
 		output := NewMatcher[string, int](input).
-			With(
+			WithPattern(
 				Intersection[int](356, 356, 356),
 				func() string { return expected },
 			).
@@ -351,7 +342,7 @@ func TestMatcherWithIntersection(t *testing.T) {
 		input := 356
 		expected := "matched"
 		output := NewMatcher[string, int](input).
-			With(
+			WithPattern(
 				Intersection[int](356, 1, 356),
 				func() string { return unexpected },
 			).
@@ -366,7 +357,7 @@ func TestMatcherWithIntersection(t *testing.T) {
 		input := "hello world"
 		expected := "matched"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				Intersection[string](input, input, input),
 				func() string { return expected },
 			).
@@ -386,7 +377,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := 356
 		output := NewMatcher[string, int](input).
-			With(
+			WithPattern(
 				String(),
 				func() string { return unexpected },
 			).
@@ -400,7 +391,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String(),
 				func() string { return expected },
 			).
@@ -414,7 +405,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().StartsWith("hello"),
 				func() string { return expected },
 			).
@@ -428,7 +419,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().StartsWith("world"),
 				func() string { return unexpected },
 			).
@@ -442,7 +433,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().EndsWith("world"),
 				func() string { return expected },
 			).
@@ -456,7 +447,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().EndsWith("hello"),
 				func() string { return unexpected },
 			).
@@ -470,7 +461,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().MinLength(5),
 				func() string { return expected },
 			).
@@ -484,7 +475,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().MinLength(10),
 				func() string { return unexpected },
 			).
@@ -498,7 +489,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().Regex(regexp.MustCompile("hello")),
 				func() string { return expected },
 			).
@@ -512,7 +503,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().Regex(regexp.MustCompile("universe$")),
 				func() string { return unexpected },
 			).
@@ -526,7 +517,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().Includes("world"),
 				func() string { return expected },
 			).
@@ -540,7 +531,7 @@ func TestStringPattern(t *testing.T) {
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
-			With(
+			WithPattern(
 				String().Includes("universe"),
 				func() string { return unexpected },
 			).
