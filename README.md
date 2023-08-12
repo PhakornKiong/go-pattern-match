@@ -7,7 +7,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/phakornkiong/go-pattern"
+	"github.com/phakornkiong/go-pattern/pattern"
 )
 
 func FoodSorterWithPattern(input string) (output string) {
@@ -80,8 +80,8 @@ This is a receiver method on a Matcher instance. It is called when no match is f
 
 You can find more examples and usage scenarios in the `fxStrategy` and `switchUnion` files in the repository. Here are the direct links:
 
-- [fxStrategy](https://github.com/phakornkiong/go-pattern/blob/main/fxStrategy.go)
-- [switchUnion](https://github.com/phakornkiong/go-pattern/blob/main/switchUnion.go)
+- [fxStrategy](https://github.com/PhakornKiong/go-pattern/blob/master/example/fxstrategy/main.go)
+- [switchUnion](https://github.com/phakornkiong/go-pattern/blob/master/switchUnion.go)
 
 These files a demonstrate its common use case. You may also refer to the test file for more information
 
