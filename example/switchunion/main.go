@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/phakornkiong/go-pattern"
+	"github.com/phakornkiong/go-pattern/pattern"
 )
 
 func FoodSorter(input string) (output string) {
