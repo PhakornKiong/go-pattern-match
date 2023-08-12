@@ -48,7 +48,9 @@ Compared to imperative control flow using conditionals and switch statements, pa
 
 ## Documentation
 
-## `NewMatcher[T any, V any](input V) *Matcher[T, V]`: This function creates a new Matcher instance. The generics `T` and `V` represent any types.
+## `NewMatcher[T any, V any](input V) *Matcher[T, V]`
+
+This function creates a new Matcher instance. The generics `T` and `V` represent any types.
 
 `T` is the type that the handler function will return when a match is found.
 
