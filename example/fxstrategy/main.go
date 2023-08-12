@@ -24,10 +24,6 @@ var STABLE_CRYPTOCURRENCIES = []string{USDT, USDC}
 type CurrencyPair []string
 
 func main() {
-	// isCrypto := pattern.When[[]string](func(currency string) bool {
-	// 	return pattern.Union(CRYPTOCURRENCIES...).Match(currency)
-	// })
-
 	isUsdStable := pattern.When(func(currency string) bool {
 		return pattern.Union(STABLE_CRYPTOCURRENCIES...).Match(currency)
 	})
@@ -40,31 +36,37 @@ func main() {
 		return currencies[0] == currencies[1]
 	})
 
+	// Here we are defining patternMatcher based on curreny pair
+	// In real world, you would return the actual implementations of your abstraction
 	patternMatcher := func(input CurrencyPair) string {
 		return pattern.NewMatcher[string, CurrencyPair](input).
+			// WithValues compare the currency pair by its indexes
 			WithValues(
 				CurrencyPair{"BTC", "ETH"},
 				func() string { return "Concrete BTC to ETH" },
 			).
+			// WithPatterns will run pattern by index of the input slice
 			WithPatterns(
 				pattern.Patteners(isUsdStable, isUsdStable),
-				func() string { return "both USD Stables strategy" },
+				func() string { return "Both USD Stables strategy" },
 			).
 			WithPatterns(
 				[]pattern.Pattener{isUsdStable, isFiat},
 				func() string { return "USD Stables to fiat" },
 			).
+			// WithPattern will run pattern on entire input
 			WithPattern(
 				isSameCurrency,
-				func() string { return "same currency strategy" },
+				func() string { return "Same currency strategy" },
 			).
+			// Default case
 			Otherwise(func() string { return "default strategy" })
 	}
 
 	fmt.Println(patternMatcher(CurrencyPair{BTC, ETH}))   // Concrete BTC to ETH
 	fmt.Println(patternMatcher(CurrencyPair{USDT, SGD}))  // USD Stables to fiat
-	fmt.Println(patternMatcher(CurrencyPair{USDT, USDT})) // both USD Stables strategy
-	fmt.Println(patternMatcher(CurrencyPair{USDT, USDC})) // both USD Stables strategy
-	fmt.Println(patternMatcher(CurrencyPair{BTC, BTC}))   // same currency strategy
+	fmt.Println(patternMatcher(CurrencyPair{USDT, USDT})) // Both USD Stables strategy
+	fmt.Println(patternMatcher(CurrencyPair{USDT, USDC})) // Both USD Stables strategy
+	fmt.Println(patternMatcher(CurrencyPair{BTC, BTC}))   // Same currency strategy
 	fmt.Println(patternMatcher(CurrencyPair{USD, SGD}))   // default strategy
 }

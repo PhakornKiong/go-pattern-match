@@ -512,13 +512,13 @@ func TestStringPattern(t *testing.T) {
 		assert.Equal(expected, output)
 	})
 
-	t.Run("Includes positive case", func(t *testing.T) {
+	t.Run("Contains positive case", func(t *testing.T) {
 		assert := assert.New(t)
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
 			WithPattern(
-				String().Includes("world"),
+				String().Contains("world"),
 				func() string { return expected },
 			).
 			Otherwise(func() string { return unexpected })
@@ -526,13 +526,13 @@ func TestStringPattern(t *testing.T) {
 		assert.Equal(expected, output)
 	})
 
-	t.Run("Includes negative case", func(t *testing.T) {
+	t.Run("Contains negative case", func(t *testing.T) {
 		assert := assert.New(t)
 
 		input := "hello world"
 		output := NewMatcher[string, string](input).
 			WithPattern(
-				String().Includes("universe"),
+				String().Contains("universe"),
 				func() string { return unexpected },
 			).
 			Otherwise(func() string { return expected })

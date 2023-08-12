@@ -33,7 +33,7 @@ func TestIntersectionPattern(t *testing.T) {
 	t.Run("IntersectionPattern with stringPattern positive case", func(t *testing.T) {
 		assert := assert.New(t)
 		input := "test"
-		stringP := String().Includes(input)
+		stringP := String().Contains(input)
 
 		w := IntersectionPattern(stringP, stringP)
 
@@ -45,8 +45,8 @@ func TestIntersectionPattern(t *testing.T) {
 	t.Run("IntersectionPattern with stringPattern negative case", func(t *testing.T) {
 		assert := assert.New(t)
 		input := "test"
-		stringP := String().Includes(input)
-		stringN := String().Includes("hey")
+		stringP := String().Contains(input)
+		stringN := String().Contains("hey")
 
 		w := IntersectionPattern(stringP, stringN)
 

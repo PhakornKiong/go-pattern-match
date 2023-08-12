@@ -108,20 +108,20 @@ func TestString(t *testing.T) {
 		assert.False(output)
 	})
 
-	t.Run("String Includes positive case", func(t *testing.T) {
+	t.Run("String Contains positive case", func(t *testing.T) {
 		assert := assert.New(t)
 		input := "test"
-		w := String().Includes("es")
+		w := String().Contains("es")
 
 		output := w.Match(input)
 
 		assert.True(output)
 	})
 
-	t.Run("String Includes negative case", func(t *testing.T) {
+	t.Run("String Contains negative case", func(t *testing.T) {
 		assert := assert.New(t)
 		input := "test"
-		w := String().Includes("no")
+		w := String().Contains("no")
 
 		output := w.Match(input)
 
@@ -158,7 +158,7 @@ func TestString(t *testing.T) {
 			Regex(regex).
 			MinLength(4).
 			MaxLength(26).
-			Includes("est").
+			Contains("est").
 			EndsWith("e case").
 			StartsWith("test")
 
@@ -175,7 +175,7 @@ func TestString(t *testing.T) {
 			Regex(regex).
 			MinLength(4).
 			MaxLength(25). // Fail
-			Includes("est").
+			Contains("est").
 			EndsWith("e case").
 			StartsWith("test")
 

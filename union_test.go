@@ -32,8 +32,8 @@ func TestUnionPattern(t *testing.T) {
 	t.Run("UnionPattern with stringPattern positive case", func(t *testing.T) {
 		assert := assert.New(t)
 		input := "test"
-		stringP := String().Includes("test")
-		stringN := String().Includes("hey")
+		stringP := String().Contains("test")
+		stringN := String().Contains("hey")
 
 		w := UnionPattern(stringP, stringN)
 
@@ -45,7 +45,7 @@ func TestUnionPattern(t *testing.T) {
 	t.Run("UnionPattern with stringPattern negative case", func(t *testing.T) {
 		assert := assert.New(t)
 		input := "test"
-		stringN := String().Includes("hey")
+		stringN := String().Contains("hey")
 
 		w := UnionPattern(stringN, stringN)
 

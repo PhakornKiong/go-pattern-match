@@ -11,7 +11,7 @@ type stringPattern struct {
 	endsWith   string
 	minLength  int
 	maxLength  int
-	includes   string
+	contains   string
 	regex      *regexp.Regexp
 }
 
@@ -25,7 +25,7 @@ func (s stringPattern) clone() stringPattern {
 		endsWith:   s.endsWith,
 		minLength:  s.minLength,
 		maxLength:  s.maxLength,
-		includes:   s.includes,
+		contains:   s.contains,
 		regex:      s.regex,
 	}
 }
@@ -54,9 +54,9 @@ func (s stringPattern) MaxLength(value int) stringPattern {
 	return newPattern
 }
 
-func (s stringPattern) Includes(value string) stringPattern {
+func (s stringPattern) Contains(value string) stringPattern {
 	newPattern := s.clone()
-	newPattern.includes = value
+	newPattern.contains = value
 	return newPattern
 }
 
@@ -89,7 +89,7 @@ func (s stringPattern) Match(value any) bool {
 		return false
 	}
 
-	if s.includes != "" && !strings.Contains(str, s.includes) {
+	if s.contains != "" && !strings.Contains(str, s.contains) {
 		return false
 	}
 

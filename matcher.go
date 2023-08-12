@@ -20,7 +20,7 @@ type Handler[T any] func() T
 // isMatched is a boolean that indicates whether a match has been found.
 // response is the output that is returned when a match is found.
 type Matcher[T any, V any] struct {
-	value     V
+	input     V
 	isMatched bool
 	response  T
 }
@@ -28,31 +28,26 @@ type Matcher[T any, V any] struct {
 // NewMatcher is a function that creates a new Matcher instance.
 // It takes a value of any type V and returns a pointer to a Matcher instance.
 // The returned Matcher instance has its value field set to the input value and isMatched field set to false by default.
-func NewMatcher[T any, V any](value V) *Matcher[T, V] {
-	return &Matcher[T, V]{value: value}
+func NewMatcher[T any, V any](input V) *Matcher[T, V] {
+	return &Matcher[T, V]{input: input}
 }
 
-func (m *Matcher[T, V]) patternMatched(fn Handler[T]) {
-	m.response = fn()
-	m.isMatched = true
-}
-
+// WithPattern check if pattern matches the entire input
 func (m *Matcher[T, V]) WithPattern(pattern Pattener, fn Handler[T]) *Matcher[T, V] {
-	if !m.isMatched && pattern.Match(m.value) {
+	if !m.isMatched && pattern.Match(m.input) {
 		m.patternMatched(fn)
 	}
 	return m
 }
 
+// WithPatterns check each of the patterns against the each of the input
 func (m *Matcher[T, V]) WithPatterns(patterns []Pattener, fn Handler[T]) *Matcher[T, V] {
 	if m.isMatched {
 		return m
 	}
 
 	var allMatched = true
-
-	value := reflect.ValueOf(m.value)
-
+	value := reflect.ValueOf(m.input)
 	if value.Len() != len(patterns) {
 		return m
 	}
@@ -73,15 +68,15 @@ func (m *Matcher[T, V]) WithPatterns(patterns []Pattener, fn Handler[T]) *Matche
 	return m
 }
 
-func (m *Matcher[T, V]) WithValues(pattern V, fn Handler[T]) *Matcher[T, V] {
+// WithValues check for deep equality between each of the value  against the each of the input
+func (m *Matcher[T, V]) WithValues(value V, fn Handler[T]) *Matcher[T, V] {
 	if m.isMatched {
 		return m
 	}
 
-	if reflect.TypeOf(pattern).Kind() == reflect.Array || reflect.TypeOf(pattern).Kind() == reflect.Slice {
-		// fmt.Println("I AM HERE")
-		patternVal := reflect.ValueOf(pattern)
-		value := reflect.ValueOf(m.value)
+	if reflect.TypeOf(value).Kind() == reflect.Array || reflect.TypeOf(value).Kind() == reflect.Slice {
+		patternVal := reflect.ValueOf(value)
+		value := reflect.ValueOf(m.input)
 
 		if value.Len() != patternVal.Len() {
 			return m
@@ -109,21 +104,28 @@ func (m *Matcher[T, V]) WithValues(pattern V, fn Handler[T]) *Matcher[T, V] {
 	return m
 }
 
+// WithValue check for deep equality between the value and the input
 func (m *Matcher[T, V]) WithValue(pattern V, fn Handler[T]) *Matcher[T, V] {
 	if m.isMatched {
 		return m
 	}
 
-	if reflect.DeepEqual(m.value, pattern) {
+	if reflect.DeepEqual(m.input, pattern) {
 		m.patternMatched(fn)
 	}
 
 	return m
 }
 
+// Otherwise is called if no patterns match
 func (m *Matcher[T, V]) Otherwise(fn Handler[T]) T {
 	if !m.isMatched {
 		m.response = fn()
 	}
 	return m.response
+}
+
+func (m *Matcher[T, V]) patternMatched(fn Handler[T]) {
+	m.response = fn()
+	m.isMatched = true
 }
