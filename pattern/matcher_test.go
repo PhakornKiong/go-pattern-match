@@ -59,6 +59,143 @@ func TestMatcher2(t *testing.T) {
 	}
 }
 
+func TestMatcherWithPatterns(t *testing.T) {
+	unexpected := "did not match"
+	expected := "matched"
+
+	t.Run("string patterns positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		firstP := String().Contains("you")
+		secondP := String().MinLength(10)
+		thirdP := String().EndsWith("us")
+
+		input := []string{"you", "this is more than 10 character", "world ends with us"}
+		output := NewMatcher[string](input).
+			WithPatterns(
+				Patteners(firstP, secondP, thirdP),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("string patterns negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		firstP := String().Contains("you")
+		secondP := String().MinLength(256)
+		thirdP := String().EndsWith("us")
+
+		input := []string{"you", "this is more than 10 character", "world ends with us"}
+		output := NewMatcher[string](input).
+			WithPatterns(
+				Patteners(firstP, secondP, thirdP),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("mismatch input length negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		firstP := String().Contains("you")
+		secondP := String().MinLength(10)
+		thirdP := String().EndsWith("us")
+
+		input := []string{"you", "this is more than 10 character"}
+		output := NewMatcher[string](input).
+			WithPatterns(
+				Patteners(firstP, secondP, thirdP),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("mismatch pattern length negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		firstP := String().Contains("you")
+		secondP := String().MinLength(10)
+
+		input := []string{"you", "this is more than 10 character", "world ends with us"}
+		output := NewMatcher[string](input).
+			WithPatterns(
+				Patteners(firstP, secondP),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+}
+
+func TestMatcherWithValues(t *testing.T) {
+	unexpected := "did not match"
+	expected := "matched"
+
+	t.Run("int values positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := []int{25, 35, 99}
+		output := NewMatcher[string](input).
+			WithValues(
+				input,
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("int values negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := []int{25, 35, 99}
+		output := NewMatcher[string](input).
+			WithValues(
+				[]int{25, 45, 99},
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("mismatch input length negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := []int{25, 99}
+		output := NewMatcher[string](input).
+			WithValues(
+				[]int{25, 45, 99},
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("mismatch values length negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := []int{25, 35, 99}
+		output := NewMatcher[string](input).
+			WithValues(
+				[]int{25, 99},
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+}
+
 func TestMatcherWithNotPattern(t *testing.T) {
 	unexpected := "did not match"
 	expected := "matched"

@@ -27,4 +27,16 @@ func TestWhenPattern(t *testing.T) {
 
 		assert.False(output)
 	})
+
+	t.Run("whenPattern type mismatch case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := 123
+		w := When[string](func(s string) bool { return s == "test" })
+
+		output := w.Match(input)
+
+		assert.False(output)
+	})
+
 }
