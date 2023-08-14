@@ -1,5 +1,8 @@
 # Go-Pattern
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/phakornkiong/go-pattern)](https://goreportcard.com/report/github.com/phakornkiong/go-pattern)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/PhakornKiong/go-pattern/blob/master/LICENSE)
+
 Pattern Matching library for Go
 
 ```go

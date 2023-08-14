@@ -36,7 +36,7 @@ func main() {
 		return currencies[0] == currencies[1]
 	})
 
-	// Here we are defining patternMatcher based on curreny pair
+	// Here we are defining patternMatcher based on currency pair
 	// In real world, you would return the actual implementations of your abstraction
 	patternMatcher := func(input CurrencyPair) string {
 		return pattern.NewMatcher[string, CurrencyPair](input).
