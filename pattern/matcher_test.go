@@ -137,6 +137,24 @@ func TestMatcherWithPatterns(t *testing.T) {
 
 		assert.Equal(expected, output)
 	})
+
+	t.Run("mismatch input type negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		firstP := String().Contains("you")
+		secondP := String().MinLength(10)
+
+		input := "hello world"
+		output := NewMatcher[string](input).
+			WithPatterns(
+				Patteners(firstP, secondP),
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
 }
 
 func TestMatcherWithValues(t *testing.T) {
@@ -196,6 +214,20 @@ func TestMatcherWithValues(t *testing.T) {
 		output := NewMatcher[string](input).
 			WithValues(
 				[]int{25, 99},
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("mismatch input type negative case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := "hello world"
+		output := NewMatcher[string](input).
+			WithValues(
+				input,
 				func() string { return unexpected },
 			).
 			Otherwise(func() string { return expected })
