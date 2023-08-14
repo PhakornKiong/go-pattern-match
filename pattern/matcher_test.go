@@ -9,30 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMatcherStruct(t *testing.T) {
-
-	type MyStruct struct {
-		x int
-		y int
-	}
-
-	type OtherStruct struct {
-		z int
-	}
-
-	expected := OtherStruct{25}
-
-	input := MyStruct{25, 35}
-	output := NewMatcher[OtherStruct](input).
-		WithValue(MyStruct{25, 35}, func() OtherStruct { return expected }).
-		WithValue(MyStruct{25, 35}, func() OtherStruct { return OtherStruct{} }).
-		Otherwise(func() OtherStruct { return OtherStruct{} })
-
-	if output != expected {
-		t.Errorf("Expected '%v' but got '%v'", expected, output)
-	}
-}
-
 func TestMatcher(t *testing.T) {
 	input := 2
 	expected := "number: two"
@@ -57,6 +33,55 @@ func TestMatcher2(t *testing.T) {
 	if output != expected {
 		t.Errorf("Expected '%s' but got '%s'", expected, output)
 	}
+}
+
+func TestMatcherWithValue(t *testing.T) {
+	unexpected := "did not match"
+	expected := "matched"
+
+	t.Run("struct value positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		type MyStruct struct {
+			x int
+			y int
+		}
+
+		input := MyStruct{25, 35}
+		output := NewMatcher[string](input).
+			WithValue(MyStruct{25, 85}, func() string { return unexpected }).
+			WithValue(MyStruct{25, 35}, func() string { return expected }).
+			Otherwise(func() string { return unexpected })
+		assert.Equal(expected, output)
+	})
+
+	t.Run("map value positive case", func(t *testing.T) {
+		assert := assert.New(t)
+
+		input := map[string]int{
+			"x": 1,
+			"y": 25,
+			"z": 256,
+		}
+
+		output := NewMatcher[string](input).
+			WithValue(
+				map[string]int{
+					"x": 2,
+					"y": 50,
+					"z": 256,
+				},
+				func() string { return unexpected }).
+			WithValue(
+				map[string]int{
+					"x": 1,
+					"y": 25,
+					"z": 256,
+				},
+				func() string { return expected }).
+			Otherwise(func() string { return unexpected })
+		assert.Equal(expected, output)
+	})
 }
 
 func TestMatcherWithPatterns(t *testing.T) {
@@ -157,6 +182,45 @@ func TestMatcherWithPatterns(t *testing.T) {
 
 }
 
+func TestMatcherWithAnyPattern(t *testing.T) {
+	unexpected := "did not match"
+	expected := "matched"
+
+	t.Run("any pattern positive case", func(t *testing.T) {
+		assert := assert.New(t)
+		input := []int{25, 35, 99}
+		output := NewMatcher[string](input).
+			WithValues(
+				[]int{1, 2, 3},
+				func() string { return unexpected },
+			).
+			WithPattern(
+				Any(),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("any patterns positive case", func(t *testing.T) {
+		assert := assert.New(t)
+		input := []int{25, 35, 99}
+		output := NewMatcher[string](input).
+			WithValues(
+				[]int{1, 2, 3},
+				func() string { return unexpected },
+			).
+			WithPatterns(
+				Patteners(Int().Lte(50), Any(), Int()),
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+}
+
 func TestMatcherWithValues(t *testing.T) {
 	unexpected := "did not match"
 	expected := "matched"
@@ -228,6 +292,40 @@ func TestMatcherWithValues(t *testing.T) {
 		output := NewMatcher[string](input).
 			WithValues(
 				input,
+				func() string { return unexpected },
+			).
+			Otherwise(func() string { return expected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("patterner value positive case", func(t *testing.T) {
+		assert := assert.New(t)
+		input := []int{25, 35, 99, 255}
+		output := NewMatcher[string](input).
+			WithValues(
+				[]any{1, 2, 3},
+				func() string { return unexpected },
+			).
+			WithValues(
+				[]any{Any(), Not(36), Union[int](99, 98), Intersection[int](255, 255)},
+				func() string { return expected },
+			).
+			Otherwise(func() string { return unexpected })
+
+		assert.Equal(expected, output)
+	})
+
+	t.Run("patterner value negative case", func(t *testing.T) {
+		assert := assert.New(t)
+		input := []int{25, 35, 99}
+		output := NewMatcher[string](input).
+			WithValues(
+				[]any{1, 2, 3},
+				func() string { return unexpected },
+			).
+			WithValues(
+				[]any{Any(), Not(36), Not(99)},
 				func() string { return unexpected },
 			).
 			Otherwise(func() string { return expected })

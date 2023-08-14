@@ -23,5 +23,5 @@ func NotPattern[V Pattener](pattern V) notPattern[V] {
 }
 
 func (n notPattern[V]) Match(value any) bool {
-	return n.pattern.Match(value)
+	return !n.pattern.Match(value)
 }

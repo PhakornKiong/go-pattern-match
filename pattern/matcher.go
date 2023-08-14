@@ -47,15 +47,15 @@ func (m *Matcher[T, V]) WithPatterns(patterns []Pattener, fn Handler[T]) *Matche
 	}
 
 	var allMatched = true
-	value := reflect.ValueOf(m.input)
-	if value.Len() != len(patterns) {
+	input := reflect.ValueOf(m.input)
+	if input.Len() != len(patterns) {
 		return m
 	}
 
-	for i := 0; i < value.Len(); i++ {
-		val := value.Index(i)
+	for i := 0; i < input.Len(); i++ {
+		inputVal := input.Index(i)
 
-		if !patterns[i].Match(val.Interface()) {
+		if !patterns[i].Match(inputVal.Interface()) {
 			allMatched = false
 			break
 		}
@@ -69,28 +69,37 @@ func (m *Matcher[T, V]) WithPatterns(patterns []Pattener, fn Handler[T]) *Matche
 }
 
 // WithValues check for deep equality between each of the value  against the each of the input
-func (m *Matcher[T, V]) WithValues(value V, fn Handler[T]) *Matcher[T, V] {
+func (m *Matcher[T, V]) WithValues(value any, fn Handler[T]) *Matcher[T, V] {
 	if m.isMatched {
 		return m
 	}
 
 	if reflect.TypeOf(value).Kind() == reflect.Array || reflect.TypeOf(value).Kind() == reflect.Slice {
 		patternVal := reflect.ValueOf(value)
-		value := reflect.ValueOf(m.input)
+		input := reflect.ValueOf(m.input)
 
-		if value.Len() != patternVal.Len() {
+		if input.Len() != patternVal.Len() {
 			return m
 		}
 
 		var allMatched = true
 		for i := 0; i < patternVal.Len(); i++ {
-
 			firstVal := patternVal.Index(i)
-			secondVal := value.Index(i)
+			inputVal := input.Index(i)
 
-			if !reflect.DeepEqual(firstVal.Interface(), secondVal.Interface()) {
-				allMatched = false
-				break
+			// Check if firstVal is a Pattener
+			if patterner, ok := firstVal.Interface().(Pattener); ok {
+				// If it is, run patterner.Match
+				if !patterner.Match(inputVal.Interface()) {
+					allMatched = false
+					break
+				}
+			} else {
+				// If it's not a Pattener, then run reflect.DeepEqual
+				if !reflect.DeepEqual(firstVal.Interface(), inputVal.Interface()) {
+					allMatched = false
+					break
+				}
 			}
 		}
 

@@ -37,7 +37,7 @@ func TestNotPattern(t *testing.T) {
 
 		output := w.Match(input)
 
-		assert.True(output)
+		assert.False(output)
 	})
 
 	t.Run("notPattern input negative case", func(t *testing.T) {
@@ -48,6 +48,6 @@ func TestNotPattern(t *testing.T) {
 
 		output := w.Match(input)
 
-		assert.False(output)
+		assert.True(output)
 	})
 }
