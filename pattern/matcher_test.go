@@ -76,6 +76,10 @@ func TestMatcherWithPatterns(t *testing.T) {
 				Patteners(firstP, secondP, thirdP),
 				func() string { return expected },
 			).
+			WithPatterns(
+				Patteners(),
+				func() string { return unexpected },
+			).
 			Otherwise(func() string { return unexpected })
 
 		assert.Equal(expected, output)
@@ -147,6 +151,10 @@ func TestMatcherWithValues(t *testing.T) {
 			WithValues(
 				input,
 				func() string { return expected },
+			).
+			WithValues(
+				[]int{1, 2, 3},
+				func() string { return unexpected },
 			).
 			Otherwise(func() string { return unexpected })
 
