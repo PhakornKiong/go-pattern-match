@@ -51,6 +51,7 @@ func TestMatcherWithValue(t *testing.T) {
 		output := NewMatcher[string](input).
 			WithValue(MyStruct{25, 85}, func() string { return unexpected }).
 			WithValue(MyStruct{25, 35}, func() string { return expected }).
+			WithValue(MyStruct{88, 99}, func() string { return unexpected }).
 			Otherwise(func() string { return unexpected })
 		assert.Equal(expected, output)
 	})
