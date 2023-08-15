@@ -13,7 +13,12 @@ func match(input []int) string {
 			func() string { return "Nope" },
 		).
 		WithValues(
-			[]any{pattern.Any(), pattern.Not(36), pattern.Union[int](99, 98), 255},
+			[]any{
+				pattern.Any(),
+				pattern.Not(36),
+				pattern.Union[int](99, 98),
+				255,
+			},
 			func() string { return "Its a match" },
 		).
 		Otherwise(func() string { return "Otherwise" })

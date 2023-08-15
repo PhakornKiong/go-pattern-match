@@ -13,6 +13,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/phakornkiong/go-pattern/pattern"
 )
 
@@ -23,7 +24,12 @@ func match(input []int) string {
 			func() string { return "Nope" },
 		).
 		WithValues(
-			[]any{pattern.Any(), pattern.Not(36), pattern.Union[int](99, 98), 255},
+			[]any{
+				pattern.Any(),
+				pattern.Not(36),
+				pattern.Union[int](99, 98),
+				255,
+			},
 			func() string { return "Its a match" },
 		).
 		Otherwise(func() string { return "Otherwise" })
@@ -177,7 +183,8 @@ func match(input int) string {
 				func() string { return "2" },
 			).
 			WithPattern(
-				pattern.NotPattern(intPattern), // Always matches if not in between 25 & 35
+				// Always matches if not in between 25 & 35
+				pattern.NotPattern(intPattern),
 				func() string { return "Its a match" },
 			).
 			Otherwise(func() string { return "Otherwise" })
@@ -187,6 +194,31 @@ match(2) // "2"
 match(30) // "Otherwise"
 match(36) // "Its a match"
 match(24) // "Its a match"
+```
+
+### `When` pattern
+
+`When` pattern accepts a predicate, which is a function that takes a value and returns a boolean. This pattern matches when the predicate function returns true for the input value.
+
+```go
+func match(input int) string {
+	return pattern.NewMatcher[string](input).
+			WithValue(
+				2,
+				func() string { return "2" },
+			).
+			WithPattern(
+				// match if input larger than 100
+				pattern.When[int](func(i int) bool { return i > 100 }),
+				func() string { return "Its a match" },
+			).
+			Otherwise(func() string { return "Otherwise" })
+}
+
+match(2) // "2"
+match(99) // "Otherwise"
+match(100) // "Its a match"
+match(105) // "Its a match"
 ```
 
 ###
