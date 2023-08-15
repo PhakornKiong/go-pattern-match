@@ -85,7 +85,7 @@ If a match is found, it calls the provided Handler function and return the respo
 
 This enables more flexible pattern match where the provided values can be a `patterner` or just `actual value`.
 
-For example, now you can use many of the built-in patterns like `Union`, `Any`, `Not`...
+For example, now you can use many of the built-in patterns like `Union`, `Any`, `Not`. See the [Patterns](#patterns) section for more details.
 
 ```go
 func match(input []int) string {
@@ -95,7 +95,12 @@ func match(input []int) string {
 				func() string { return "Nope" },
 			).
 			WithValues(
-				[]any{pattern.Any(), pattern.Not(36), pattern.Union[int](99, 98), 255},
+				[]any{
+					pattern.Any(),
+					pattern.Not(36),
+					pattern.Union[int](99, 98),
+					255,
+				},
 				func() string { return "Its a match" },
 			).
 			Otherwise(func() string { return "Otherwise" })
@@ -106,25 +111,26 @@ match([]int{25, 35, 99, 255}) // "Its a match"
 match([]int{1, 5, 6, 7}) // "Otherwise"
 ```
 
-## `.Otherwise(fn Handler[T]) *Matcher[T, V]`
+### `.Otherwise(fn Handler[T]) *Matcher[T, V]`
 
 It is called when no match is found for the input. It calls the provided Handler function and return the response `T`.
 
-## Patterns
+## [Patterns](#patterns)
 
 Patterns provide a way to declaratively match values. In general, they all implements the `Patterner` interface which requires a `Match(any) bool` method.
 
 Some common patterns included are:
 
-- `Any`
-- `Not` & `NotPattern`
-- `When`
+- [Any](#any-pattern)
+- [Not Pattern](#not-pattern)
+- [NotPattern Pattern](#notpattern-pattern)
+- [When Pattern](#when-pattern)
 - `String`
 - `Int`
 - `Union` & `UnionPattern`
 - `Intersection` & `IntersectionPattern`
 
-### `Any` pattern
+## [Any Pattern](#any-pattern)
 
 `pattern.Any()` returns a `Patterner` that matches any value.
 
@@ -147,7 +153,7 @@ match(6) // "Its a match"
 match(7) // "Its a match"
 ```
 
-### `Not` pattern
+### [Not Pattern](#not-pattern)
 
 `pattern.Not(input)` returns a `Patterner` that matches any value other than the input by comparing using deep equality.
 
@@ -170,7 +176,7 @@ match(6) // "Its a match"
 match(7) // "Its a match"
 ```
 
-### `NotPattern` pattern
+### [NotPattern Pattern](#notpattern-pattern)
 
 Similar to `Not` pattern, but accepts only a `Patterner` instead of a value. Used mainly to get inverse of a pattern.
 
@@ -196,7 +202,7 @@ match(36) // "Its a match"
 match(24) // "Its a match"
 ```
 
-### `When` pattern
+### [When Pattern](#when-pattern)
 
 `When` pattern accepts a predicate, which is a function that takes a value and returns a boolean. This pattern matches when the predicate function returns true for the input value.
 
@@ -220,8 +226,6 @@ match(99) // "Otherwise"
 match(100) // "Its a match"
 match(105) // "Its a match"
 ```
-
-###
 
 ## Examples
 
