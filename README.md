@@ -16,26 +16,24 @@ import (
 	"github.com/phakornkiong/go-pattern/pattern"
 )
 
-func FoodSorterWithPattern(input string) (output string) {
-	output = pattern.NewMatcher[string](input).
-		WithPattern(
-			pattern.Union("apple", "strawberry", "orange"),
-			func() string { return "fruit" },
+func match(input []int) string {
+	return pattern.NewMatcher[string](input).
+		WithValues(
+			[]any{1, 2, 3, 4},
+			func() string { return "Nope" },
 		).
-		WithPattern(
-			pattern.Union("carrot", "pok-choy", "cabbage"),
-			func() string { return "vegetable" },
+		WithValues(
+			[]any{pattern.Any(), pattern.Not(36), pattern.Union[int](99, 98), 255},
+			func() string { return "Its a match" },
 		).
-		Otherwise(func() string { return "unknown" })
-	return output
+		Otherwise(func() string { return "Otherwise" })
 }
 
 func main() {
-	fmt.Println(FoodSorterWithPattern("apple"))  // "fruit"
-	fmt.Println(FoodSorterWithPattern("carrot")) // "vegetable"
-	fmt.Println(FoodSorterWithPattern("candy"))  // "unknown"
+	fmt.Println(match([]int{1, 2, 3, 4}))      // "Nope"
+	fmt.Println(match([]int{25, 35, 99, 255})) // "Its a match"
+	fmt.Println(match([]int{1, 5, 6, 7}))      // "Otherwise"
 }
-
 ```
 
 ## Why Pattern Matching?
@@ -54,7 +52,7 @@ Compared to imperative control flow using conditionals and switch statements, pa
 
 ## Documentation
 
-## `NewMatcher[T any, V any](input V) *Matcher[T, V]`
+### `NewMatcher[T any, V any](input V) *Matcher[T, V]`
 
 This function creates a new Matcher instance. The generics `T` and `V` represent any types.
 
@@ -62,25 +60,136 @@ This function creates a new Matcher instance. The generics `T` and `V` represent
 
 `V` is the type of the input value that will be matched against the patterns.
 
-## `.WithPattern(pattern Pattener, fn Handler[T]) *Matcher[T, V]`
+### `.WithPattern(pattern Pattener, fn Handler[T]) *Matcher[T, V]`
 
-This is a receiver method on a Matcher instance. It checks if the provided pattern matches the entire input. If a match is found, it calls the provided Handler function and return the response `T`.
+It checks if the provided pattern matches the entire input. If a match is found, it calls the provided Handler function and return the response `T`.
 
-## `.WithPatterns(patterns []Pattener, fn Handler[T]) *Matcher[T, V]`
+### `.WithPatterns(patterns []Pattener, fn Handler[T]) *Matcher[T, V]`
 
-This is a receiver method on a Matcher instance. It checks each of the provided patterns against <b>each of the input</b>. If a match is found, it calls the provided Handler function and return the response `T`.
+It checks each of the provided patterns against <b>each of the input</b>. If a match is found, it calls the provided Handler function and return the response `T`.
 
-## `.WithValue(value V, fn Handler[T]) *Matcher[T, V]`
+### `.WithValue(value V, fn Handler[T]) *Matcher[T, V]`
 
-This is a receiver method on a Matcher instance. It checks for deep equality between the provided value and the entire input. If a match is found, it calls the provided Handler function and return the response `T`.
+It checks for deep equality between the provided value and the entire input. If a match is found, it calls the provided Handler function and return the response `T`.
 
-## `.WithValues(values []V, fn Handler[T]) *Matcher[T, V]`
+### `.WithValues(values any, fn Handler[T]) *Matcher[T, V]`
 
-This is a receiver method on a Matcher instance. It checks for deep equality between each of the provided values against <b>each of the input</b>. If a match is found, it calls the provided Handler function and return the response `T`.
+If a `Patterner` is provided as the pattern, it will check if any of the provided values matches the input by calling the `Match` method on each value, else it will do a deep equality check on each value.
+If a match is found, it calls the provided Handler function and return the response `T`.
+
+This enables more flexible pattern match where the provided values can be a `patterner` or just `actual value`.
+
+For example, now you can use many of the built-in patterns like `Union`, `Any`, `Not`...
+
+```go
+func match(input []int) string {
+	return pattern.NewMatcher[string](input).
+			WithValues(
+				[]any{1, 2, 3, 4},
+				func() string { return "Nope" },
+			).
+			WithValues(
+				[]any{pattern.Any(), pattern.Not(36), pattern.Union[int](99, 98), 255},
+				func() string { return "Its a match" },
+			).
+			Otherwise(func() string { return "Otherwise" })
+}
+
+match([]int{1, 2, 3, 4}) // "Nope"
+match([]int{25, 35, 99, 255}) // "Its a match"
+match([]int{1, 5, 6, 7}) // "Otherwise"
+```
 
 ## `.Otherwise(fn Handler[T]) *Matcher[T, V]`
 
-This is a receiver method on a Matcher instance. It is called when no match is found for the input. It calls the provided Handler function and return the response `T`.
+It is called when no match is found for the input. It calls the provided Handler function and return the response `T`.
+
+## Patterns
+
+Patterns provide a way to declaratively match values. In general, they all implements the `Patterner` interface which requires a `Match(any) bool` method.
+
+Some common patterns included are:
+
+- `Any`
+- `Not` & `NotPattern`
+- `When`
+- `String`
+- `Int`
+- `Union` & `UnionPattern`
+- `Intersection` & `IntersectionPattern`
+
+### `Any` pattern
+
+`pattern.Any()` returns a `Patterner` that matches any value.
+
+```go
+func match(input int) string {
+	return pattern.NewMatcher[string](input).
+			WithValue(
+				2,
+				func() string { return "Nope" },
+			).
+			WithPattern(
+				pattern.Any(), // Always matches
+				func() string { return "Its a match" },
+			).
+			Otherwise(func() string { return "Nope" })
+}
+
+match(5) // "Its a match"
+match(6) // "Its a match"
+match(7) // "Its a match"
+```
+
+### `Not` pattern
+
+`pattern.Not(input)` returns a `Patterner` that matches any value other than the input by comparing using deep equality.
+
+```go
+func match(input int) string {
+	return pattern.NewMatcher[string](input).
+			WithValue(
+				2,
+				func() string { return "2" },
+			).
+			WithPattern(
+				pattern.Not(3), // Always matches if not 3
+				func() string { return "Its a match" },
+			).
+			Otherwise(func() string { return "Otherwise" })
+}
+
+match(3) // "Otherwise"
+match(6) // "Its a match"
+match(7) // "Its a match"
+```
+
+### `NotPattern` pattern
+
+Similar to `Not` pattern, but accepts only a `Patterner` instead of a value. Used mainly to get inverse of a pattern.
+
+```go
+func match(input int) string {
+	intPattern := pattern.Int().Between(25, 35)
+	return pattern.NewMatcher[string](input).
+			WithValue(
+				2,
+				func() string { return "2" },
+			).
+			WithPattern(
+				pattern.NotPattern(intPattern), // Always matches if not in between 25 & 35
+				func() string { return "Its a match" },
+			).
+			Otherwise(func() string { return "Otherwise" })
+}
+
+match(2) // "2"
+match(30) // "Otherwise"
+match(36) // "Its a match"
+match(24) // "Its a match"
+```
+
+###
 
 ## Examples
 
