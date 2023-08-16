@@ -121,16 +121,25 @@ Patterns provide a way to declaratively match values. In general, they all imple
 
 Some common patterns included are:
 
-- [Any](#any-pattern)
+- [Any Pattern](#any-pattern)
 - [Not Pattern](#not-pattern)
 - [NotPattern Pattern](#notpattern-pattern)
 - [When Pattern](#when-pattern)
-- `String`
-- `Int`
-- `Union` & `UnionPattern`
-- `Intersection` & `IntersectionPattern`
+- [Union Pattern](#union-pattern)
+- [UnionPattern Pattern](#unionpattern-pattern)
+- [IntersectionPattern Pattern](#intersectionpattern-pattern)
+- [String Pattern](#intersectionpattern-pattern)
+- [Int Pattern](#intersectionpattern-pattern)
 
-## [Any Pattern](#any-pattern)
+TODO patterns
+
+- [ ] Maps
+- [ ] Slice/Array
+- [ ] Struct
+
+Currently you can use [When Pattern](#when-pattern) to do custom matching logic for these pattern.
+
+### [Any Pattern](#any-pattern)
 
 `pattern.Any()` returns a `Patterner` that matches any value.
 
@@ -225,6 +234,114 @@ match(2) // "2"
 match(99) // "Otherwise"
 match(100) // "Its a match"
 match(105) // "Its a match"
+```
+
+### [Union Pattern](#union-pattern)
+
+`Union` pattern matches if the input equals any of the provided values by using deep equality check.
+
+```go
+func FoodSorterWithPattern(input string) (output string) {
+	output = pattern.NewMatcher[string](input).
+		WithPattern(
+			pattern.Union("apple", "strawberry", "orange"),
+			func() string { return "fruit" },
+		).
+		WithPattern(
+			pattern.Union("carrot", "pok-choy", "cabbage"),
+			func() string { return "vegetable" },
+		).
+		Otherwise(func() string { return "unknown" })
+
+	return output
+}
+
+FoodSorterWithPattern("apple")  // "fruit"
+FoodSorterWithPattern("orange") // "fruit"
+FoodSorterWithPattern("carrot") // "vegetable"
+FoodSorterWithPattern("candy")  // "unknown"
+```
+
+### [UnionPattern Pattern](#unionpattern-pattern)
+
+Similar to [Union pattern](#union-pattern) but accepts only `Patterner` instead of values. Useful for extending patterning capabilities.
+
+### [IntersectionPattern Pattern](#intersectionpattern-pattern)
+
+`IntersectionPattern` accepts multiple patterns and matches if the input matches all of them. Useful for extending patterning capabilities.
+
+### [String Pattern](#intersectionpattern-pattern)
+
+`String` pattern matches string values. It provides additional methods to match on string contents:
+
+#### `StartsWith(value string) stringPattern`
+
+Chainable method for matching strings starting with the provided value.
+
+#### `EndsWith(value string) stringPattern`
+
+Chainable method for matching strings ending with the provided value.
+
+#### `Contains(value string) stringPattern`
+
+Chainable method for matching strings containing the provided value.
+
+#### `Regex(value string) stringPattern`
+
+Chainable method for matching strings according to the provided regular expression.
+
+#### `MinLength(value int) stringPattern`
+
+Chainable method for matching strings with a minimum length of the provided value.
+
+#### `MaxLength(value int) stringPattern`
+
+Chainable method for matching strings with a maximum length of the provided value.
+
+Here is an example of how to use these methods:
+
+```go
+func match(input string) string {
+	pattern1 := pattern.String().
+		StartsWith("hello").
+		EndsWith("world").
+		MaxLength(11)
+
+	pattern2 := pattern.String().
+		Contains("dni").
+		Regex(regexp.MustCompile("night$"))
+
+	pattern3 := pattern.String().
+		MinLength(3)
+
+	pattern4 := pattern.String()
+
+	return pattern.NewMatcher[string](input).
+		WithPattern(
+			pattern1,
+			func() string { return "pattern 1" },
+		).
+		WithPattern(
+			pattern2,
+			func() string { return "pattern 2" },
+		).
+		WithPattern(
+			pattern3,
+			func() string { return "pattern 3" },
+		).
+		WithPattern(
+			pattern4,
+			func() string { return "pattern 4" },
+		).
+		Otherwise(func() string { return "This is impossible" })
+}
+
+match("hello world") // "pattern 1"
+match("goodnight")   // "pattern 2"
+match("abc")         // "pattern 3"
+match("ab")          // "pattern 4"
+match("")            // "pattern 4"
+
 ```
 
 ## Examples

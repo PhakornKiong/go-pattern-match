@@ -37,6 +37,7 @@ func FoodSorterWithPattern(input string) (output string) {
 
 func main() {
 	fmt.Println(FoodSorterWithPattern("apple"))  // "fruit"
+	fmt.Println(FoodSorterWithPattern("orange")) // "fruit"
 	fmt.Println(FoodSorterWithPattern("carrot")) // "vegetable"
 	fmt.Println(FoodSorterWithPattern("candy"))  // "unknown"
 }
