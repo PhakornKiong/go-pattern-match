@@ -132,7 +132,7 @@ Some common patterns included are:
 - [Int Pattern](#int-pattern)
 - [Slice Pattern](#slice-pattern)
 
-TODO patterns
+Pattern to be implemented:
 
 - [ ] Maps
 - [ ] Struct
