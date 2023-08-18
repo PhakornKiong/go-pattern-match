@@ -352,23 +352,23 @@ match("")            // "pattern 4"
 
 Chainable method for the first element of the input slice to equal the provided value.
 
-### `HeadPattern(p Patterner) slicePattern[V]`
+#### `HeadPattern(p Patterner) slicePattern[V]`
 
 Chained method for the first element of the input slice to match the provided pattern. It calls the underlying `Patterner`'s `Match` method.
 
-### `Tail(v V) slicePattern[V]`
+#### `Tail(v V) slicePattern[V]`
 
 Chainable method for the last element of the input slice to equal the provided value.
 
-### `TailPattern(p Patterner) slicePattern[V]`
+#### `TailPattern(p Patterner) slicePattern[V]`
 
 Chained method for the last element of the input slice to match the provided pattern. It calls the underlying `Patterner`'s `Match` method.
 
-### `Contains(v V) slicePattern[V]`
+#### `Contains(v V) slicePattern[V]`
 
 Chainable method for the input slice to contain the provided value. Can be used multiple times to check for multiple values.
 
-### `Contains(p Patterner) slicePattern[V]`
+#### `Contains(p Patterner) slicePattern[V]`
 
 Chainable method for the input slice to contain element that matches the provided pattern. It calls the underlying `Patterner`'s `Match` method. Can be used multiple times to check for multiple patterns.
 
@@ -414,7 +414,7 @@ match([]int{1001, 25, 3, 25001}) // "pattern 3"
 
 ## Examples
 
-You can find more examples and usage scenarios in the `fxStrategy` and `switchUnion` files in the repository. Here are the direct links:
+You can find more examples and usage scenarios [here](https://github.com/PhakornKiong/go-pattern/tree/master/example). Following are some of notable use case:
 
 - [fxStrategy](https://github.com/PhakornKiong/go-pattern/blob/master/example/fxstrategy/main.go)
 - [switchUnion](https://github.com/PhakornKiong/go-pattern/blob/master/example/switchunion/main.go)
