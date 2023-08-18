@@ -50,7 +50,7 @@ Compared to imperative control flow using conditionals and switch statements, pa
 
 ## Key Components
 
-- `Pattener`: This is an interface that requires the implementation of a `Match` function. Any type that implements this interface can be used as a pattern in the matcher.
+- `Patterner`: This is an interface that requires the implementation of a `Match` function. Any type that implements this interface can be used as a pattern in the matcher.
 
 - `Handler`: This is a function type that returns a generic type `T`. This function is called when a match is found.
 
@@ -66,11 +66,11 @@ This function creates a new Matcher instance. The generics `T` and `V` represent
 
 `V` is the type of the input value that will be matched against the patterns.
 
-### `.WithPattern(pattern Pattener, fn Handler[T]) *Matcher[T, V]`
+### `.WithPattern(pattern Patterner, fn Handler[T]) *Matcher[T, V]`
 
 It checks if the provided pattern matches the entire input. If a match is found, it calls the provided Handler function and return the response `T`.
 
-### `.WithPatterns(patterns []Pattener, fn Handler[T]) *Matcher[T, V]`
+### `.WithPatterns(patterns []Patterner, fn Handler[T]) *Matcher[T, V]`
 
 It checks each of the provided patterns against <b>each of the input</b>. If a match is found, it calls the provided Handler function and return the response `T`.
 
@@ -128,13 +128,13 @@ Some common patterns included are:
 - [Union Pattern](#union-pattern)
 - [UnionPattern Pattern](#unionpattern-pattern)
 - [IntersectionPattern Pattern](#intersectionpattern-pattern)
-- [String Pattern](#intersectionpattern-pattern)
-- [Int Pattern](#intersectionpattern-pattern)
+- [String Pattern](#string-pattern)
+- [Int Pattern](#int-pattern)
+- [Slice Pattern](#slice-pattern)
 
 TODO patterns
 
 - [ ] Maps
-- [ ] Slice/Array
 - [ ] Struct
 
 Currently you can use [When Pattern](#when-pattern) to do custom matching logic for these pattern.
@@ -270,7 +270,7 @@ Similar to [Union pattern](#union-pattern) but accepts only `Patterner` instead 
 
 `IntersectionPattern` accepts multiple patterns and matches if the input matches all of them. Useful for extending patterning capabilities.
 
-### [String Pattern](#intersectionpattern-pattern)
+### [String Pattern](#string-pattern)
 
 `String` pattern matches string values. It provides additional methods to match on string contents:
 
@@ -342,6 +342,74 @@ match("abc")         // "pattern 3"
 match("ab")          // "pattern 4"
 match("")            // "pattern 4"
 
+```
+
+### [Slice Pattern](#slice-pattern)
+
+`Slice` pattern matches slice values. It provides additional methods to match on slice contents:
+
+#### `Head(v V) slicePattern[V]`
+
+Chainable method for the first element of the input slice to equal the provided value.
+
+### `HeadPattern(p Patterner) slicePattern[V]`
+
+Chained method for the first element of the input slice to match the provided pattern. It calls the underlying `Patterner`'s `Match` method.
+
+### `Tail(v V) slicePattern[V]`
+
+Chainable method for the last element of the input slice to equal the provided value.
+
+### `TailPattern(p Patterner) slicePattern[V]`
+
+Chained method for the last element of the input slice to match the provided pattern. It calls the underlying `Patterner`'s `Match` method.
+
+### `Contains(v V) slicePattern[V]`
+
+Chainable method for the input slice to contain the provided value. Can be used multiple times to check for multiple values.
+
+### `Contains(p Patterner) slicePattern[V]`
+
+Chainable method for the input slice to contain element that matches the provided pattern. It calls the underlying `Patterner`'s `Match` method. Can be used multiple times to check for multiple patterns.
+
+```go
+func match(input []int) string {
+	pattern1 := pattern.Slice[int]().
+		Head(1).
+		Tail(100)
+
+	subPattern2 := pattern.Int().Between(75, 100)
+
+	pattern2 := pattern.Slice[int]().
+		Contains(25).
+		Contains(50).
+		ContainsPattern(subPattern2)
+
+	subHeadPattern3 := pattern.Int().Gt(1000)
+	subTailattern3 := pattern.Int().Gt(2500)
+	pattern3 := pattern.Slice[int]().
+		HeadPattern(subHeadPattern3).
+		TailPattern(subTailattern3)
+
+	return pattern.NewMatcher[string](input).
+		WithPattern(
+			pattern1,
+			func() string { return "pattern 1" },
+		).
+		WithPattern(
+			pattern2,
+			func() string { return "pattern 2" },
+		).
+		WithPattern(
+			pattern3,
+			func() string { return "pattern 3" },
+		).
+		Otherwise(func() string { return "No pattern matched" })
+}
+
+match([]int{1, 2, 3, 100})       // "pattern 1"
+match([]int{2, 25, 85, 50})      // "pattern 2"
+match([]int{1001, 25, 3, 25001}) // "pattern 3"
 ```
 
 ## Examples

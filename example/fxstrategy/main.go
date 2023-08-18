@@ -51,7 +51,7 @@ func main() {
 				func() string { return "Both USD Stables strategy" },
 			).
 			WithPatterns(
-				[]pattern.Pattener{isUsdStable, isFiat},
+				[]pattern.Patterner{isUsdStable, isFiat},
 				func() string { return "USD Stables to fiat" },
 			).
 			// WithPattern will run pattern on entire input

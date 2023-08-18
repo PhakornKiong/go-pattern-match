@@ -4,11 +4,11 @@ import (
 	"reflect"
 )
 
-type Pattener interface {
+type Patterner interface {
 	Match(any) bool
 }
 
-func Patteners(patterns ...Pattener) []Pattener {
+func Patteners(patterns ...Patterner) []Patterner {
 	return patterns
 }
 
@@ -33,7 +33,7 @@ func NewMatcher[T any, V any](input V) *Matcher[T, V] {
 }
 
 // WithPattern check if pattern matches the entire input
-func (m *Matcher[T, V]) WithPattern(pattern Pattener, fn Handler[T]) *Matcher[T, V] {
+func (m *Matcher[T, V]) WithPattern(pattern Patterner, fn Handler[T]) *Matcher[T, V] {
 	if !m.isMatched && pattern.Match(m.input) {
 		m.patternMatched(fn)
 	}
@@ -41,7 +41,7 @@ func (m *Matcher[T, V]) WithPattern(pattern Pattener, fn Handler[T]) *Matcher[T,
 }
 
 // WithPatterns check each of the patterns against the each of the input
-func (m *Matcher[T, V]) WithPatterns(patterns []Pattener, fn Handler[T]) *Matcher[T, V] {
+func (m *Matcher[T, V]) WithPatterns(patterns []Patterner, fn Handler[T]) *Matcher[T, V] {
 	if m.isMatched {
 		return m
 	}
@@ -87,15 +87,15 @@ func (m *Matcher[T, V]) WithValues(value any, fn Handler[T]) *Matcher[T, V] {
 			firstVal := patternVal.Index(i)
 			inputVal := input.Index(i)
 
-			// Check if firstVal is a Pattener
-			if patterner, ok := firstVal.Interface().(Pattener); ok {
+			// Check if firstVal is a Patterner
+			if patterner, ok := firstVal.Interface().(Patterner); ok {
 				// If it is, run patterner.Match
 				if !patterner.Match(inputVal.Interface()) {
 					allMatched = false
 					break
 				}
 			} else {
-				// If it's not a Pattener, then run reflect.DeepEqual
+				// If it's not a Patterner, then run reflect.DeepEqual
 				if !reflect.DeepEqual(firstVal.Interface(), inputVal.Interface()) {
 					allMatched = false
 					break

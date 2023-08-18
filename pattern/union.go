@@ -21,11 +21,11 @@ func (u union[V]) Match(value any) bool {
 	return false
 }
 
-type unionPattern[V Pattener] struct {
+type unionPattern[V Patterner] struct {
 	patterns []V
 }
 
-func UnionPattern[V Pattener](patterns ...V) unionPattern[V] {
+func UnionPattern[V Patterner](patterns ...V) unionPattern[V] {
 	return unionPattern[V]{patterns: patterns}
 }
 

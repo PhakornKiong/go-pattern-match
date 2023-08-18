@@ -21,11 +21,11 @@ func (i intersection[V]) Match(value any) bool {
 	return true
 }
 
-type intersectionPattern[V Pattener] struct {
+type intersectionPattern[V Patterner] struct {
 	patterns []V
 }
 
-func IntersectionPattern[V Pattener](patterns ...V) intersectionPattern[V] {
+func IntersectionPattern[V Patterner](patterns ...V) intersectionPattern[V] {
 	return intersectionPattern[V]{patterns: patterns}
 }
 

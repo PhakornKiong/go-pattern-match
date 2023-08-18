@@ -4,11 +4,11 @@ import "reflect"
 
 type slicePattern[V any] struct {
 	containsElement []V
-	containsPattern []Pattener
+	containsPattern []Patterner
 	headElement     *V
-	headPattern     *Pattener
+	headPattern     *Patterner
 	tailElement     *V
-	tailPattern     *Pattener
+	tailPattern     *Patterner
 }
 
 func Slice[V any]() slicePattern[V] {
@@ -32,7 +32,7 @@ func (s slicePattern[V]) Head(v V) slicePattern[V] {
 	return newPattern
 }
 
-func (s slicePattern[V]) HeadPattern(p Pattener) slicePattern[V] {
+func (s slicePattern[V]) HeadPattern(p Patterner) slicePattern[V] {
 	newPattern := s.clone()
 	newPattern.headPattern = &p
 	return newPattern
@@ -44,7 +44,7 @@ func (s slicePattern[V]) Tail(v V) slicePattern[V] {
 	return newPattern
 }
 
-func (s slicePattern[V]) TailPattern(p Pattener) slicePattern[V] {
+func (s slicePattern[V]) TailPattern(p Patterner) slicePattern[V] {
 	newPattern := s.clone()
 	newPattern.tailPattern = &p
 	return newPattern
@@ -56,7 +56,7 @@ func (s slicePattern[V]) Contains(v V) slicePattern[V] {
 	return newPattern
 }
 
-func (s slicePattern[V]) ContainsPattern(p Pattener) slicePattern[V] {
+func (s slicePattern[V]) ContainsPattern(p Patterner) slicePattern[V] {
 	newPattern := s.clone()
 	newPattern.containsPattern = append(newPattern.containsPattern, p)
 	return newPattern

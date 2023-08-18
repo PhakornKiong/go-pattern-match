@@ -8,7 +8,7 @@ type mapPattern[K comparable, V any] struct {
 	keyVals        []keyVal[K, V]
 	keys           []K
 	vals           []V
-	keyValPatterns []keyVal[K, Pattener]
+	keyValPatterns []keyVal[K, Patterner]
 }
 
 type keyVal[K comparable, V any] struct {
@@ -47,9 +47,9 @@ func (m mapPattern[K, V]) Val(val V) mapPattern[K, V] {
 	return newPattern
 }
 
-func (m mapPattern[K, V]) KeyValPatterns(key K, p Pattener) mapPattern[K, V] {
+func (m mapPattern[K, V]) KeyValPatterns(key K, p Patterner) mapPattern[K, V] {
 	newPattern := m.clone()
-	newPattern.keyValPatterns = append(newPattern.keyValPatterns, keyVal[K, Pattener]{key, p})
+	newPattern.keyValPatterns = append(newPattern.keyValPatterns, keyVal[K, Patterner]{key, p})
 	return newPattern
 }
 
