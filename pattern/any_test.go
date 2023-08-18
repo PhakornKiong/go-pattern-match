@@ -12,7 +12,7 @@ func TestAnyPattern(t *testing.T) {
 		a := Any()
 
 		output := a.Match("")
-		assert.True(output)
+		assert.False(output)
 	})
 
 }
