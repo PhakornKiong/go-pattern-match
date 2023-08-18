@@ -1,10 +1,10 @@
 # Go-Pattern
 
-[![Test](https://github.com/PhakornKiong/go-pattern/actions/workflows/test.yml/badge.svg)](https://github.com/PhakornKiong/go-pattern/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/PhakornKiong/go-pattern/branch/master/graph/badge.svg?token=IL7G963OAF)](https://codecov.io/gh/PhakornKiong/go-pattern)
-[![Go Report Card](https://goreportcard.com/badge/github.com/phakornkiong/go-pattern)](https://goreportcard.com/report/github.com/phakornkiong/go-pattern)
-[![GoDoc](https://godoc.org/phakornkiong/go-pattern?status.svg)](https://godoc.org/github.com/phakornkiong/go-pattern)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/PhakornKiong/go-pattern/blob/master/LICENSE)
+[![Test](https://github.com/PhakornKiong/go-pattern-match/actions/workflows/test.yml/badge.svg)](https://github.com/PhakornKiong/go-pattern-match/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/PhakornKiong/go-pattern-match/branch/master/graph/badge.svg?token=IL7G963OAF)](https://codecov.io/gh/PhakornKiong/go-pattern-match)
+[![Go Report Card](https://goreportcard.com/badge/github.com/phakornkiong/go-pattern-match)](https://goreportcard.com/report/github.com/phakornkiong/go-pattern-match)
+[![GoDoc](https://godoc.org/phakornkiong/go-pattern-match?status.svg)](https://godoc.org/github.com/phakornkiong/go-pattern-match)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/PhakornKiong/go-pattern-match/blob/master/LICENSE)
 
 Pattern Matching library for Go
 
@@ -14,7 +14,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/phakornkiong/go-pattern/pattern"
+	"github.com/phakornkiong/go-pattern-match/pattern"
 )
 
 func match(input []int) string {
@@ -414,10 +414,10 @@ match([]int{1001, 25, 3, 25001}) // "pattern 3"
 
 ## Examples
 
-You can find more examples and usage scenarios [here](https://github.com/PhakornKiong/go-pattern/tree/master/example). Following are some of notable use case:
+You can find more examples and usage scenarios [here](https://github.com/PhakornKiong/go-pattern-match/tree/master/example). Following are some of notable use case:
 
-- [fxStrategy](https://github.com/PhakornKiong/go-pattern/blob/master/example/fxstrategy/main.go)
-- [switchUnion](https://github.com/PhakornKiong/go-pattern/blob/master/example/switchunion/main.go)
+- [fxStrategy](https://github.com/PhakornKiong/go-pattern-match/blob/master/example/fxstrategy/main.go)
+- [switchUnion](https://github.com/PhakornKiong/go-pattern-match/blob/master/example/switchunion/main.go)
 
 These files a demonstrate its common use case. You may also refer to the test file for more information
 

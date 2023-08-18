@@ -1,4 +1,4 @@
-module github.com/phakornkiong/go-pattern
+module github.com/phakornkiong/go-pattern-match
 
 go 1.20
 

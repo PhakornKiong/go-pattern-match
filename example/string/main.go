@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/phakornkiong/go-pattern/pattern"
+	"github.com/phakornkiong/go-pattern-match/pattern"
 )
 
 func match(input string) string {
