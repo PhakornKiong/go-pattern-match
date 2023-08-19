@@ -131,11 +131,8 @@ Some common patterns included are:
 - [String Pattern](#string-pattern)
 - [Int Pattern](#int-pattern)
 - [Slice Pattern](#slice-pattern)
-
-Pattern to be implemented:
-
-- [ ] Maps
-- [ ] Struct
+- [Map Pattern](#map-pattern)
+- [Struct Pattern](#struct-pattern)
 
 Currently you can use [When Pattern](#when-pattern) to do custom matching logic for these pattern.
 
@@ -344,6 +341,10 @@ match("")            // "pattern 4"
 
 ```
 
+### [Int Pattern](#int-pattern)
+
+To be documented
+
 ### [Slice Pattern](#slice-pattern)
 
 `Slice` pattern matches slice values. It provides additional methods to match on slice contents:
@@ -412,10 +413,19 @@ match([]int{2, 25, 85, 50})      // "pattern 2"
 match([]int{1001, 25, 3, 25001}) // "pattern 3"
 ```
 
+### [Map Pattern](#map-pattern)
+
+To be documented
+
+### [Struct Pattern](#struct-pattern)
+
+To be documented
+
 ## Examples
 
 You can find more examples and usage scenarios [here](https://github.com/PhakornKiong/go-pattern-match/tree/master/example). Following are some of notable use case:
 
+- [shippingStrategy](https://github.com/PhakornKiong/go-pattern-match/blob/master/example/shippingStrategy/main.go)
 - [fxStrategy](https://github.com/PhakornKiong/go-pattern-match/blob/master/example/fxstrategy/main.go)
 - [switchUnion](https://github.com/PhakornKiong/go-pattern-match/blob/master/example/switchunion/main.go)
 
