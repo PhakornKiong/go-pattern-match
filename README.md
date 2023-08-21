@@ -12,33 +12,33 @@ Pattern Matching library for Go
 package main
 
 import (
-	"fmt"
+  "fmt"
 
-	"github.com/phakornkiong/go-pattern-match/pattern"
+  "github.com/phakornkiong/go-pattern-match/pattern"
 )
 
 func match(input []int) string {
-	return pattern.NewMatcher[string](input).
-		WithValues(
-			[]any{1, 2, 3, 4},
-			func() string { return "Nope" },
-		).
-		WithValues(
-			[]any{
-				pattern.Any(),
-				pattern.Not(36),
-				pattern.Union[int](99, 98),
-				255,
-			},
-			func() string { return "Its a match" },
-		).
-		Otherwise(func() string { return "Otherwise" })
+  return pattern.NewMatcher[string](input).
+    WithValues(
+      []any{1, 2, 3, 4},
+      func() string { return "Nope" },
+    ).
+    WithValues(
+      []any{
+        pattern.Any(),
+        pattern.Not(36),
+        pattern.Union[int](99, 98),
+        255,
+      },
+      func() string { return "Its a match" },
+    ).
+    Otherwise(func() string { return "Otherwise" })
 }
 
 func main() {
-	fmt.Println(match([]int{1, 2, 3, 4}))      // "Nope"
-	fmt.Println(match([]int{25, 35, 99, 255})) // "Its a match"
-	fmt.Println(match([]int{1, 5, 6, 7}))      // "Otherwise"
+  fmt.Println(match([]int{1, 2, 3, 4}))      // "Nope"
+  fmt.Println(match([]int{25, 35, 99, 255})) // "Its a match"
+  fmt.Println(match([]int{1, 5, 6, 7}))      // "Otherwise"
 }
 ```
 
@@ -89,21 +89,21 @@ For example, now you can use many of the built-in patterns like `Union`, `Any`, 
 
 ```go
 func match(input []int) string {
-	return pattern.NewMatcher[string](input).
-			WithValues(
-				[]any{1, 2, 3, 4},
-				func() string { return "Nope" },
-			).
-			WithValues(
-				[]any{
-					pattern.Any(),
-					pattern.Not(36),
-					pattern.Union[int](99, 98),
-					255,
-				},
-				func() string { return "Its a match" },
-			).
-			Otherwise(func() string { return "Otherwise" })
+  return pattern.NewMatcher[string](input).
+    WithValues(
+      []any{1, 2, 3, 4},
+      func() string { return "Nope" },
+    ).
+    WithValues(
+      []any{
+        pattern.Any(),
+        pattern.Not(36),
+        pattern.Union[int](99, 98),
+        255,
+      },
+      func() string { return "Its a match" },
+    ).
+    Otherwise(func() string { return "Otherwise" })
 }
 
 match([]int{1, 2, 3, 4}) // "Nope"
@@ -142,16 +142,16 @@ Currently you can use [When Pattern](#when-pattern) to do custom matching logic 
 
 ```go
 func match(input int) string {
-	return pattern.NewMatcher[string](input).
-			WithValue(
-				2,
-				func() string { return "Nope" },
-			).
-			WithPattern(
-				pattern.Any(), // Always matches
-				func() string { return "Its a match" },
-			).
-			Otherwise(func() string { return "Nope" })
+  return pattern.NewMatcher[string](input).
+    WithValue(
+      2,
+      func() string { return "Nope" },
+    ).
+    WithPattern(
+      pattern.Any(), // Always matches
+      func() string { return "Its a match" },
+    ).
+    Otherwise(func() string { return "Nope" })
 }
 
 match(5) // "Its a match"
@@ -165,16 +165,16 @@ match(7) // "Its a match"
 
 ```go
 func match(input int) string {
-	return pattern.NewMatcher[string](input).
-			WithValue(
-				2,
-				func() string { return "2" },
-			).
-			WithPattern(
-				pattern.Not(3), // Always matches if not 3
-				func() string { return "Its a match" },
-			).
-			Otherwise(func() string { return "Otherwise" })
+  return pattern.NewMatcher[string](input).
+    WithValue(
+      2,
+      func() string { return "2" },
+    ).
+    WithPattern(
+      pattern.Not(3), // Always matches if not 3
+      func() string { return "Its a match" },
+    ).
+    Otherwise(func() string { return "Otherwise" })
 }
 
 match(3) // "Otherwise"
@@ -188,18 +188,18 @@ Similar to `Not` pattern, but accepts only a `Patterner` instead of a value. Use
 
 ```go
 func match(input int) string {
-	intPattern := pattern.Int().Between(25, 35)
-	return pattern.NewMatcher[string](input).
-			WithValue(
-				2,
-				func() string { return "2" },
-			).
-			WithPattern(
-				// Always matches if not in between 25 & 35
-				pattern.NotPattern(intPattern),
-				func() string { return "Its a match" },
-			).
-			Otherwise(func() string { return "Otherwise" })
+  intPattern := pattern.Int().Between(25, 35)
+  return pattern.NewMatcher[string](input).
+    WithValue(
+      2,
+      func() string { return "2" },
+    ).
+    WithPattern(
+      // Always matches if not in between 25 & 35
+      pattern.NotPattern(intPattern),
+      func() string { return "Its a match" },
+    ).
+    Otherwise(func() string { return "Otherwise" })
 }
 
 match(2) // "2"
@@ -214,17 +214,17 @@ match(24) // "Its a match"
 
 ```go
 func match(input int) string {
-	return pattern.NewMatcher[string](input).
-			WithValue(
-				2,
-				func() string { return "2" },
-			).
-			WithPattern(
-				// match if input larger than 100
-				pattern.When[int](func(i int) bool { return i > 100 }),
-				func() string { return "Its a match" },
-			).
-			Otherwise(func() string { return "Otherwise" })
+  return pattern.NewMatcher[string](input).
+    WithValue(
+      2,
+      func() string { return "2" },
+    ).
+    WithPattern(
+      // match if input larger than 100
+      pattern.When[int](func(i int) bool { return i > 100 }),
+      func() string { return "Its a match" },
+    ).
+    Otherwise(func() string { return "Otherwise" })
 }
 
 match(2) // "2"
@@ -239,18 +239,18 @@ match(105) // "Its a match"
 
 ```go
 func FoodSorterWithPattern(input string) (output string) {
-	output = pattern.NewMatcher[string](input).
-		WithPattern(
-			pattern.Union("apple", "strawberry", "orange"),
-			func() string { return "fruit" },
-		).
-		WithPattern(
-			pattern.Union("carrot", "pok-choy", "cabbage"),
-			func() string { return "vegetable" },
-		).
-		Otherwise(func() string { return "unknown" })
+  output = pattern.NewMatcher[string](input).
+    WithPattern(
+      pattern.Union("apple", "strawberry", "orange"),
+      func() string { return "fruit" },
+    ).
+    WithPattern(
+      pattern.Union("carrot", "pok-choy", "cabbage"),
+      func() string { return "vegetable" },
+    ).
+    Otherwise(func() string { return "unknown" })
 
-	return output
+  return output
 }
 
 FoodSorterWithPattern("apple")  // "fruit"
@@ -299,38 +299,38 @@ Here is an example of how to use these methods:
 
 ```go
 func match(input string) string {
-	pattern1 := pattern.String().
-		StartsWith("hello").
-		EndsWith("world").
-		MaxLength(11)
+  pattern1 := pattern.String().
+    StartsWith("hello").
+    EndsWith("world").
+    MaxLength(11)
 
-	pattern2 := pattern.String().
-		Contains("dni").
-		Regex(regexp.MustCompile("night$"))
+  pattern2 := pattern.String().
+    Contains("dni").
+    Regex(regexp.MustCompile("night$"))
 
-	pattern3 := pattern.String().
-		MinLength(3)
+  pattern3 := pattern.String().
+    MinLength(3)
 
-	pattern4 := pattern.String()
+  pattern4 := pattern.String()
 
-	return pattern.NewMatcher[string](input).
-		WithPattern(
-			pattern1,
-			func() string { return "pattern 1" },
-		).
-		WithPattern(
-			pattern2,
-			func() string { return "pattern 2" },
-		).
-		WithPattern(
-			pattern3,
-			func() string { return "pattern 3" },
-		).
-		WithPattern(
-			pattern4,
-			func() string { return "pattern 4" },
-		).
-		Otherwise(func() string { return "This is impossible" })
+  return pattern.NewMatcher[string](input).
+    WithPattern(
+      pattern1,
+      func() string { return "pattern 1" },
+    ).
+    WithPattern(
+      pattern2,
+      func() string { return "pattern 2" },
+    ).
+    WithPattern(
+      pattern3,
+      func() string { return "pattern 3" },
+    ).
+    WithPattern(
+      pattern4,
+      func() string { return "pattern 4" },
+    ).
+    Otherwise(func() string { return "This is impossible" })
 }
 
 match("hello world") // "pattern 1"
@@ -375,37 +375,37 @@ Chainable method for the input slice to contain element that matches the provide
 
 ```go
 func match(input []int) string {
-	pattern1 := pattern.Slice[int]().
-		Head(1).
-		Tail(100)
+  pattern1 := pattern.Slice[int]().
+    Head(1).
+    Tail(100)
 
-	subPattern2 := pattern.Int().Between(75, 100)
+  subPattern2 := pattern.Int().Between(75, 100)
 
-	pattern2 := pattern.Slice[int]().
-		Contains(25).
-		Contains(50).
-		ContainsPattern(subPattern2)
+  pattern2 := pattern.Slice[int]().
+    Contains(25).
+    Contains(50).
+    ContainsPattern(subPattern2)
 
-	subHeadPattern3 := pattern.Int().Gt(1000)
-	subTailattern3 := pattern.Int().Gt(2500)
-	pattern3 := pattern.Slice[int]().
-		HeadPattern(subHeadPattern3).
-		TailPattern(subTailattern3)
+  subHeadPattern3 := pattern.Int().Gt(1000)
+  subTailattern3 := pattern.Int().Gt(2500)
+  pattern3 := pattern.Slice[int]().
+    HeadPattern(subHeadPattern3).
+    TailPattern(subTailattern3)
 
-	return pattern.NewMatcher[string](input).
-		WithPattern(
-			pattern1,
-			func() string { return "pattern 1" },
-		).
-		WithPattern(
-			pattern2,
-			func() string { return "pattern 2" },
-		).
-		WithPattern(
-			pattern3,
-			func() string { return "pattern 3" },
-		).
-		Otherwise(func() string { return "No pattern matched" })
+  return pattern.NewMatcher[string](input).
+    WithPattern(
+      pattern1,
+      func() string { return "pattern 1" },
+    ).
+    WithPattern(
+      pattern2,
+      func() string { return "pattern 2" },
+    ).
+    WithPattern(
+      pattern3,
+      func() string { return "pattern 3" },
+    ).
+    Otherwise(func() string { return "No pattern matched" })
 }
 
 match([]int{1, 2, 3, 100})       // "pattern 1"
